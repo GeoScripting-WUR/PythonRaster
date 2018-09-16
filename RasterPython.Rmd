@@ -1,0 +1,121 @@
+---
+title: "[WUR GRS-51806 Geoscripting](https://geoscripting-wur.github.io/)"
+subtitle: "Week 3: Raster data handling with Python"
+author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    css: custom.css
+    highlight: tango
+    toc: yes
+    toc_depth: 2
+---
+
+# Handling Raster data with Python
+
+## Intro
+
+Key modules in Python for Raster data handling:
+
+* Developped for high-level spatial analysis:
+`PySAL`: https://pypi.python.org/pypi/PySAL
+
+Have a look at this question on GIS StackExchange:
+https://gis.stackexchange.com/questions/34509/alternatives-to-using-arcpy
+
+## Dataset
+
+The data set for the raster python session can be downloaded from:
+https://www.dropbox.com/s/rsc4lzkd3t2adq5/ospy_data5.zip?dl=0
+
+Data is also available from http://www.gis.usu.edu/~chrisg/python/2009/lectures/
+
+## Modules and drivers for raster data
+
+`GDAL`, the wonder for raster and! vector data (via `OGR`) handling
+
+## Reading, analysing, and writing raster data
+
+See here for a full [reproducible Python outline](http://nbviewer.ipython.org/github/GeoScripting-WUR/PythonWeek/blob/gh-pages/Raster%20data%20handling.ipynb).
+
+An interesting www to check out if something unexpected occurs:
+http://trac.osgeo.org/gdal/wiki/PythonGotchas
+
+### Via Python
+
+```{r, engine = 'python', eval=TRUE}
+# import modules
+from osgeo import gdal
+from osgeo.gdalconst import GA_ReadOnly, GDT_Float32
+import numpy as np
+
+# open file and print info about the file
+# the ¨../¨ refers to the parent directory of my working directory
+filename = 'data/ospy_data5/aster.img'
+dataSource = gdal.Open(filename, GA_ReadOnly)
+
+print "\nInformation about " + filename 
+print "Driver: ", dataSource.GetDriver().ShortName,"/", \
+      dataSource.GetDriver().LongName
+
+```
+
+### Via R
+
+We can quickly check what we have done with R:
+```{r, engine='R', message=FALSE, eval=FALSE}
+library(raster)
+a <- brick('data/ospy_data5/aster.img')
+plotRGB(a, 3, 2, 1, stretch='hist')
+```
+
+```{r, eval = FALSE}
+b <- raster('data/ndvi.tif')
+extent(b)
+projection(b)
+hist(b, 1, maxpixels=500, plot=TRUE)
+```
+
+## Using QGIS and Python
+
+Here is a nice clear example how to get started:
+
+* http://www.qgistutorials.com/nl/docs/getting_started_with_pyqgis.html
+* [QGIS and Python tutorial](http://www.qgisworkshop.org/html/workshop/python_in_qgis_tutorial2.html)
+
+# Assignment
+
+For this scripting challenge I have downloaded a Landsat image with all bands process to surface reflectance (Level 1T). You can download it from [here](https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=0). Unzip the file and you will see that it contains all the invidual bands. 
+
+Now, write a well-structured and documented script where you define a function to derive the NDWI and derive it from the landsat image and reproject the image to Lat/Long WGS84 (`x.ImportFromEPSG(4326)`).
+
+`NDWI = band 4 - band 5 / band 4 + band 5` ([more info about](http://nsidc.org/data/docs/daac/nsidc0332_smex03_srs_ndvi_ndwi_ok.gd.html) `NDWI`)
+
+A clean and well structured script is critical here.
+
+## Deadline
+
+Upload your documented and well structured Python script to a GitHub repository and send the link before 1030 on Monday 26/01.
+
+## Landsat data
+
+You can easily order landsat data via:
+
+  * https://earthexplorer.usgs.gov/
+  
+Once the have the Landsat ID you can order further processed data (e.g. resampled, or as geotif, etc.) via:
+
+  * http://espa.cr.usgs.gov/index/
+
+# More Information
+- http://complex.luxbulb.org/howto/spatial-analysis-python
+- [Blog about Python for GeoSpatial data analysis](http://www.digital-geography.com/python-for-geospatial-data-analysis-part-ii/?subscribe=invalid_email#477)
+- https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html
+- Great basic tutorial: http://www.gdal.org/gdal_tutorial.html
+- [Handling raster data with GDAL](http://www.gis.usu.edu/~chrisg/python/2009/)
+- [GDAL Python info and bindings](http://gdal.org/python/osgeo.gdal_array-module.html#BandReadAsArray)
+- yet another example https://borealperspectives.wordpress.com/2014/01/16/data-type-mapping-when-using-pythongdal-to-write-numpy-arrays-to-geotiff/
+
+# Info about Python editors:
+- https://stackoverflow.com/questions/8305809/is-there-something-like-rstudio-for-python (check out `Spyder` or `iPython`)
