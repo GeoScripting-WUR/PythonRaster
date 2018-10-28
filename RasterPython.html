@@ -870,7 +870,7 @@ Week 3: Python for geo-scripting
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting-wur-logo"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" /></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels</em> - 23 oktober, 2018</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels</em> - 28 oktober, 2018</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="intro">Intro</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -880,12 +880,23 @@ Week 3: Python for geo-scripting
 <li><a href="http://www.numpy.org/">NumPy</a> is fundamental package for scientific computing, such as array calculations</li>
 <li><a href="https://matplotlib.org/">matplotlib</a> for plotting</li>
 <li><a href="https://en.wikipedia.org/wiki/GDAL">GDAL</a> is powerful library for reading, writing and warping raster datasets</li>
+<li><a href="https://pysal.readthedocs.io/en/latest/">PySAL</a> is library for spatial analysis functions</li>
+<li><a href="https://pypi.org/project/descartes/#description">descartes</a> is library to plot geometric objects as matplotlib paths and patches</li>
 </ul>
+<div class="row">
+<button class="source python toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> python source
+</button>
+<pre style=""><code class="source python">conda create -n rasterpython python=3.6 pip
+source activate rasterpython
+pip install rasterio geopandas rasterstats matplotlib owslib pysal descartes
+</code></pre>
+</div>
 <p>Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers, potential crashers of programs. This is bad: among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code (<a href="https://rasterio.readthedocs.io/en/latest/intro.html">source</a>).</p>
 <h2 id="dataset">Dataset</h2>
 <p>The data set for the raster python session can be downloaded from: https://www.dropbox.com/s/rsc4lzkd3t2adq5/ospy_data5.zip?dl=0</p>
 <p>Data is also available from http://www.gis.usu.edu/~chrisg/python/2009/lectures/</p>
-<h2 id="reading-analysing-and-writing-raster-data">Reading, analysing, and writing raster data</h2>
+<h2 id="reading-analyzing-and-writing-raster-data">Reading, analyzing, and writing raster data</h2>
 <p>See here for a full <a href="http://nbviewer.ipython.org/github/GeoScripting-WUR/PythonWeek/blob/gh-pages/Raster%20data%20handling.ipynb">reproducible Python outline</a>.</p>
 <p>An interesting www to check out if something unexpected occurs: http://trac.osgeo.org/gdal/wiki/PythonGotchas</p>
 <h3 id="via-python">Via Python</h3>
