@@ -39,22 +39,119 @@ pip install rasterio geopandas rasterstats matplotlib owslib pysal descartes
 
 Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers, potential crashers of programs. This is bad: among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code ([source](https://rasterio.readthedocs.io/en/latest/intro.html)).
 
-## Dataset
+## Reading raster data with OWSLib and Rasterio
+
+Raster data can be read from a file or from a Web Coverage Service. A Web Coverage Service can load raster data in a similar way as Web Feature Service can load vector data. Web Coverage Services are a standard by the Open Geospatial Consortium ([source](https://www.opengeospatial.org/standards/wcs)) and allow the downloading of raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A [Web Map Service](https://www.opengeospatial.org/standards/wms) also allows downloading of images but without the data. Web Map Services serve the map images as visualizations. 
+
+Today we will work with some height rasters. Have a look at the Web Coverage Service of the AHN. The AHN stands for "Actueel Hoogtebestand Nederland" and is a raster dataset that contains the height of the whole of The Netherlands.
+
+```{r, engine = 'python', eval=FALSE}
+from owslib.wcs import WebCoverageService
+wcs = WebCoverageService('http://geodata.nationaalgeoregister.nl/ahn2/wcs?service=WCS', version='1.0.0')
+print(list(wcs.contents))
+```
+
+The Web Coverage Service of the AHN2 has four contents: 0.5m interpolated, 0.5m not interpolated, 0.5m rough and 5m. The meters identify the pixel size. 
+
+```{r, engine = 'python', eval=FALSE}
+print([op.name for op in wcs.operations])
+```
+
+The Web Coverage Service can be accessed for it's data (GetCoverage), metadata (DescribeCoverage) or capabilities (GetCapabilities).
+
+```{r, engine = 'python', eval=FALSE}
+cvg = wcs.contents['ahn2_05m_ruw']
+print(cvg.boundingBoxWGS84)
+print(cvg.supportedCRS)
+print(cvg.supportedFormats)
+```
+
+The metadata of each content is accessible. Supported formats for AHN are GeoTIFF with different data types. 
+
+Let's have a look at the data. We don't want to overload the web service. So when we download and directly store the data, we can use the data multiple times without having to call the web service again. Download the Digital Surface Model [DSM] and Digital Terrain Model [DTM] rasters of WUR Campus and store the rasters to local files.
+
+```{r, engine = 'python', eval=FALSE}
+x, y = 174100, 444100
+bbox = (x-500, y-500, x+500, y+500)
+response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32',
+                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+with open('./AHN2_05m_DSM.geotiff', 'wb') as file:
+    file.write(response.read())
+
+response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32',
+                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+with open('./AHN2_05m_DTM.geotiff', 'wb') as file:
+    file.write(response.read())
+```
+
+Reading the raster data with Rasterio is very straightforward.
+
+```{r, engine = 'python', eval=FALSE}
+import rasterio
+DSM = rasterio.open("./AHN2_05m_DSM.geotiff", driver="GTiff")
+DTM = rasterio.open("./AHN2_05m_DTM.geotiff", driver="GTiff")
+print(DSM.meta)
+print(DTM.meta)
+```
+
+The metadata shows us everything we need to know about the raster data.
+Ah perhaps not all. Let's make a visualization of the DSM and DTM.
+
+```{r, engine = 'python', eval=FALSE}
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(10,10))
+lidar_plot = ax.imshow(DSM.read(1), cmap='Oranges', extent=bbox)
+ax.set_title("Digital Surface Model - WUR Campus", fontsize=14)
+fig.colorbar(lidar_plot)
+ax.set_axis_off()
+plt.show()
+
+fig, ax = plt.subplots(figsize=(10,10))
+lidar_plot = ax.imshow(DTM.read(1), cmap='Oranges', extent=bbox)
+ax.set_title("Digital Terrain Model - WUR Campus", fontsize=14)
+fig.colorbar(lidar_plot)
+ax.set_axis_off()
+plt.show()
+```
+
+If you don't like the orange colormap of matplotlib, feel free to change the colormap with [another colormap](https://matplotlib.org/examples/color/colormaps_reference.html).
+
+## Calculating raster data
+
+Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by subtracting a Digital Terrain Model from a Digital Surface Model.
+
+```{r, engine = 'python', eval=FALSE}
+CHM = DSM.read() - DTM.read()
+kwargs = DSM.meta
+kwargs.update(dtype=rasterio.float32, count=1)
+with rasterio.open('./AHN2_05m_CHM.geotiff', 'w', **kwargs) as file:
+    file.write(CHM.astype(rasterio.float32))
+
+CHM = rasterio.open("./AHN2_05m_CHM.geotiff")
+print(CHM.meta)
+```
+
+Let's make a plot to compare the three height rasters. Another way to plot your figure is directly with Rasterio. On the backend the plot of Rasterio makes uses of matplotlib and numpy to make hte plots.  
+
+```{r, engine = 'python', eval=FALSE}
+from rasterio.plot import show
+fig, (axr, axg, axb) = plt.subplots(1, 3, figsize=(21, 7))
+show(DSM, ax=axr, title='DSM')
+show(DTM, ax=axg, title='DTM')
+show(CHM, ax=axb, title='CHM')
+plt.show()
+```
+
+
+
+
+## Processing satellite images
 
 The data set for the raster python session can be downloaded from:
 https://www.dropbox.com/s/rsc4lzkd3t2adq5/ospy_data5.zip?dl=0
 
-Data is also available from http://www.gis.usu.edu/~chrisg/python/2009/lectures/
+Landsat 8 data is available from [Dropbox](https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=0).
 
-
-## Reading, analyzing, and writing raster data
-
-See here for a full [reproducible Python outline](http://nbviewer.ipython.org/github/GeoScripting-WUR/PythonWeek/blob/gh-pages/Raster%20data%20handling.ipynb).
-
-An interesting www to check out if something unexpected occurs:
-http://trac.osgeo.org/gdal/wiki/PythonGotchas
-
-### Via Python
 
 ```{r, engine = 'python', eval=FALSE}
 # import modules
