@@ -123,8 +123,9 @@ Rasterio can do advanced raster processing. It handles multiple bands, [masking]
 CHM = DSM.read() - DTM.read()
 print(type(CHM))
 
-with open('./AHN2_05m_CHM.tif', 'wb') as file:
-    file.write(CHM.astype(Rasterio.float32))
+kwargs = DSM.meta # Copy metadata of rasterio.io.DatasetReader
+with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+    file.write(CHM.astype(rasterio.float32))
 ```
 
 The canopy height model gives an indication of the height of trees or buildings. Let's determine the height of individual buildings based on the height raster data. First step is to download building data from the BGT Web Feature Service, that we used yesterday.
@@ -169,6 +170,8 @@ plt.axis('equal') # Set equal axis
 plt.show() # Visualize figure 
 ```
 
+<img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height", width = "100%">
+
 ## Processing satellite images
 
 Also, satellite imagery can easily be processed with Rasterio.  We prepared a Landsat image with all bands processed to surface reflectance (Level 1T). You can download it from [here](https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=0). Unzip the file and you will see that it contains all the invidual bands. Below we made a script to download the tarfile directly from the dropbox repository.
@@ -208,13 +211,15 @@ green = greenband.read(1).astype(float)
 mir = mirband.read(1).astype(float)
 
 np.seterr(divide='ignore', invalid='ignore')  # Allow division by zero
-mndwi = np.empty(greenband.shape, dtype=Rasterio.float32)  # Create empty matrix
+mndwi = np.empty(greenband.shape, dtype=rasterio.float32)  # Create empty matrix
 check = np.logical_or(mir > 0.0, green > 0.0)  # Create check raster with True/False values
 mndwi = np.where(check, (green - mir) / (green + mir), -999)  # Calculate MNDWI
 
 water = np.where(mndwi > 0, 1, 0) # Set values above 0 as water and otherwise leave it at 0
 show(water, cmap='Blues')
 ```
+
+<img src="./images/waterImage.png" alt="Water pixels of the Netherlands", width = "60%">
 
 Since Rasterio uses numpy arrays, it is very easy to use numpy functions to help you. The np.logical_or computes the truth value of either of the two arrays. The np.where function returns the second or third argument if condition is correctly met.
 
@@ -270,6 +275,8 @@ ax.set_axis_off()
 plt.show()
 ```
 
+<img src="./images/DSMDTMImage.png" alt="Digital Surface and Terrain Model of WUR Campus", width = "100%">
+
 If you don't like the orange colormap of Matplotlib, it is possible to change to [another colormap](https://Matplotlib.org/examples/color/colormaps_reference.html).
 
 The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined.
@@ -283,6 +290,8 @@ show(CHM, ax=axchm, title='CHM')
 plt.show()
 ```
 
+<img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
+
 Rasterio can visualize simple histograms by calling functions of Matplotlib. 
 
 ```{r, engine = 'python', eval=FALSE}
@@ -291,6 +300,8 @@ show_hist(DSM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM"
 show_hist(DTM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
 show_hist(CHM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
 ```
+
+<img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
 
 
 # Assignment
