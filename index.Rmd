@@ -13,7 +13,7 @@ output:
 
 # [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
 
-_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels_ - `r format(Sys.time(), '%d %B, %Y')`
+_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil_ - `r format(Sys.time(), '%d %B, %Y')`
 
 # Handling Raster data with Python
 
@@ -304,7 +304,7 @@ show_hist(CHM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM"
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
 
 
-# Assignment
+# Exercise 12
 
 The municipality of Wageningen wants to know the volume of each building on the campus. Work with a project structure and create well-structured scripts with one main script. Create several functions to derive the building volume of buildings on the campus:
 
@@ -315,7 +315,14 @@ The municipality of Wageningen wants to know the volume of each building on the 
 * calculateBuildingVolume
 * visualizeBuildingVolume
 
-Bonus: download the data if file does not exist already and store the file locally.
+You will be reviewed mainly on the following three tasks and expected output:
+
+1. Functions that provide the necessary functionality for this exercise.
+2. Calculate the volumes (m3), per building and for all buildings together. Present result nicely summarized in one table.
+3. A nice-looking map visualization of the buildings on the campus and include at least their volumes.
+
+Optional bonus: Download the data if file does not exist already and store the file locally.
+Double bonus: Divide buildings in relevant segments that, based on elevation data, significantly differ from each other within the same building.
 
 Upload your well structured project to a GitLab repository.
 
