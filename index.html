@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels" />
-  <title></title>
+  <title>Week 3: Lesson 12 Python for raster processing</title>
   <style type="text/css">code{white-space: pre;}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -862,17 +862,19 @@
   </style>
 </head>
 <body>
-<title>
-Week 3: Python for geo-scripting
-</title>
+<div id="header">
+<h1 class="title">Week 3: Lesson 12 Python for raster processing</h1>
+<h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels</h2>
+<h3 class="date">12 januari, 2019</h3>
+</div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 19 December, 2018</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 12 januari, 2019</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
-<h2 id="intro">Intro</h2>
+<h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
 <ul>
 <li><a href="https://Rasterio.readthedocs.io/en/latest/">Rasterio</a> reads and writes geospatial raster data</li>
@@ -894,10 +896,16 @@ conda install -c conda-forge rasterio geopandas rasterstats matplotlib owslib py
 spyder</code></pre>
 </div>
 <p>You should have just started Spyder with the correct conda environment. Did you notice what the code did?</p>
+<div class="row">
+<div class="alert alert-success">
 <blockquote>
-<p><strong>Question 1</strong>: What Python packages need to be installed from the conda-forge channel?</p>
+<p>
+<strong>Question 1</strong>: What Python packages need to be installed from the conda-forge channel?
+</p>
 </blockquote>
-<p>Rasterio is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code (<a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio, 2018</a>).</p>
+</div>
+</div>
+<p><a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a> is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code.</p>
 <h2 id="reading-raster-data-with-owslib-and-rasterio">Reading raster data with OWSLib and Rasterio</h2>
 <p>Raster data can be read from a file or from a Web Coverage Service [WCS]. Web Coverage Services load raster data in a similar way as Web Feature Services [WFS] load vector data. <a href="https://www.opengeospatial.org/standards/wcs">Web Coverage Services</a> are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A <a href="https://www.opengeospatial.org/standards/wms">Web Map Service</a> [WMS] allows downloading of images but without the data values. Web Map Services serve the map images as visualizations.</p>
 <p>Today we will work with some height rasters. Have a look at the Web Coverage Service of the AHN dataset. AHN stands for &quot;Actueel Hoogtebestand Nederland&quot; and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents.</p>
@@ -965,7 +973,7 @@ print(DSM.read(1))</code></pre>
 </div>
 <p>On the backend of Rasterio the rasters are stored as NumPy arrays. This makes it easy to perform array calculations.</p>
 <h2 id="processing-raster-data">Processing raster data</h2>
-<p>Rasterio can do advanced raster processing. It handles multiple bands, <a href="https://Rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>, <a href="https://Rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>, <a href="https://Rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a> and array calculations. Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by simply subtracting a Digital Terrain Model from a Digital Surface Model. Each pixel in the CHM represents the tree overstory height above the underlying ground topography. Rasterio relies on NumPy to perform the array calcuations. Numpy arrays can be subtracted, added or indexed with multiple raster layers.</p>
+<p>Rasterio can do advanced raster processing. It handles multiple bands, <a href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>, <a href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>, <a href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a> and array calculations. Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by simply subtracting a Digital Terrain Model from a Digital Surface Model. Each pixel in the CHM represents the tree overstory height above the underlying ground topography. Rasterio relies on NumPy to perform the array calcuations. Numpy arrays can be subtracted, added or indexed with multiple raster layers.</p>
 <div class="row">
 <button class="source python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> python source
@@ -1125,7 +1133,7 @@ show(CHM, ax=axchm, title='CHM')
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
-<p>Rasterio can visualize simple histograms by calling functions of Matplotlib.</p>
+<p>Rasterio visualizes simple histograms by calling functions of Matplotlib.</p>
 <div class="row">
 <button class="source python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> python source

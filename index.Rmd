@@ -1,9 +1,9 @@
 ---
 author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels"
+title: "Week 3: Lesson 12 Python for raster processing"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
-    title: "Week 3: Python for geo-scripting"
     theme: "simplex"
     highlight: Tomorrow Night Bright
     menu: FALSE
@@ -17,7 +17,7 @@ _Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David 
 
 # Handling Raster data with Python
 
-## Intro
+## Introduction
 
 Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis.
 Python has some dedicated packages to handle rasters:
@@ -41,9 +41,11 @@ spyder
 
 You should have just started Spyder with the correct conda environment. Did you notice what the code did?
 
+```{block, type="alert alert-success"}
 > **Question 1**: What Python packages need to be installed from the conda-forge channel?
+```
 
-Rasterio is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code ([Rasterio, 2018](https://Rasterio.readthedocs.io/en/latest/intro.html)).
+[Rasterio](https://Rasterio.readthedocs.io/en/latest/intro.html) is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code.
 
 ## Reading raster data with OWSLib and Rasterio
 
@@ -117,7 +119,7 @@ On the backend of Rasterio the rasters are stored as NumPy arrays. This makes it
 
 ## Processing raster data
 
-Rasterio can do advanced raster processing. It handles multiple bands, [masking](https://Rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://Rasterio.readthedocs.io/en/latest/topics/reproject.html),  [resampling](https://Rasterio.readthedocs.io/en/latest/topics/resampling.html) and array calculations. Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by simply subtracting a Digital Terrain Model from a Digital Surface Model. Each pixel in the CHM represents the tree overstory height above the underlying ground topography. Rasterio relies on NumPy to perform the array calcuations. Numpy arrays can be subtracted, added or indexed with multiple raster layers.
+Rasterio can do advanced raster processing. It handles multiple bands, [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html),  [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html) and array calculations. Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by simply subtracting a Digital Terrain Model from a Digital Surface Model. Each pixel in the CHM represents the tree overstory height above the underlying ground topography. Rasterio relies on NumPy to perform the array calcuations. Numpy arrays can be subtracted, added or indexed with multiple raster layers.
 
 ```{r, engine = 'python', eval=FALSE}
 CHM = DSM.read() - DTM.read()
@@ -292,7 +294,7 @@ plt.show()
 
 <img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
 
-Rasterio can visualize simple histograms by calling functions of Matplotlib. 
+Rasterio visualizes simple histograms by calling functions of Matplotlib. 
 
 ```{r, engine = 'python', eval=FALSE}
 from rasterio.plot import show_hist
