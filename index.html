@@ -885,14 +885,15 @@
 <li><a href="https://en.wikipedia.org/wiki/GDAL">GDAL</a> is powerful library for reading, writing and warping raster datasets</li>
 <li><a href="https://pysal.readthedocs.io/en/latest/">PySAL</a> is library for spatial analysis functions</li>
 </ul>
-<p>Start up a new terminal and create a new environment with Python 3.6, Spyder and some useful Python packages to handle raster data.</p>
+<p>Start up a new terminal and create a new environment with Python 3, Spyder and some useful Python packages to handle raster data.</p>
 <div class="row">
 <button class="source bash toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> bash source
 </button>
-<pre style=""><code class="source bash">conda create -n rasterpython python=3.6 pip spyder
+<pre style=""><code class="source bash">conda create -n rasterpython -y python=3 pip spyder rasterio geopandas kealib=1.4.7 matplotlib owslib pysal descartes
 conda activate rasterpython
-conda install -c conda-forge rasterio geopandas rasterstats matplotlib owslib pysal descartes
+conda install -c conda-forge rasterstats -y
+conda install kealib=1.4.7 -y
 spyder</code></pre>
 </div>
 <p>You should have just started Spyder with the correct conda environment. Did you notice what the code did?</p>

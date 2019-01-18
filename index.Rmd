@@ -30,12 +30,13 @@ Python has some dedicated packages to handle rasters:
 * [GDAL](https://en.wikipedia.org/wiki/GDAL) is powerful library for reading, writing and warping raster datasets
 * [PySAL](https://pysal.readthedocs.io/en/latest/) is library for spatial analysis functions
 
-Start up a new terminal and create a new environment with Python 3.6, Spyder and some useful Python packages to handle raster data.
+Start up a new terminal and create a new environment with Python 3, Spyder and some useful Python packages to handle raster data.
 
 ```{r, engine = 'bash', eval=FALSE}
-conda create -n rasterpython python=3.6 pip spyder
+conda create -n rasterpython -y python=3 pip spyder rasterio geopandas kealib=1.4.7 matplotlib owslib pysal descartes
 conda activate rasterpython
-conda install -c conda-forge rasterio geopandas rasterstats matplotlib owslib pysal descartes
+conda install -c conda-forge rasterstats -y
+conda install kealib=1.4.7 -y
 spyder
 ```
 
