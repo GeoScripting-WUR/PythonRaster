@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
-  <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels" />
+  <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil" />
   <title>Week 3: Lesson 12 Python for raster processing</title>
   <style type="text/css">code{white-space: pre;}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -864,15 +864,15 @@
 <body>
 <div id="header">
 <h1 class="title">Week 3: Lesson 12 Python for raster processing</h1>
-<h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels</h2>
-<h3 class="date">18 januari, 2019</h3>
+<h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
+<h3 class="date">12 November, 2019</h3>
 </div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 18 januari, 2019</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 12 November, 2019</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -890,10 +890,10 @@
 <button class="source bash toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> bash source
 </button>
-<pre style=""><code class="source bash">conda create -n rasterpython -y python=3 pip spyder rasterio geopandas kealib=1.4.7 matplotlib owslib pysal descartes
+<pre style=""><code class="source bash">conda create -n rasterpython python=3 pip spyder rasterio geopandas kealib matplotlib owslib pysal descartes -y
 conda activate rasterpython
 conda install -c conda-forge rasterstats -y
-conda install kealib=1.4.7 -y
+pip install fiona==1.8.8 -y
 spyder</code></pre>
 </div>
 <p>You should have just started Spyder with the correct conda environment. Did you notice what the code did?</p>
@@ -996,12 +996,12 @@ print(cvg.supportedFormats)</code></pre>
 bbox = (x-500, y-500, x+500, y+500)
 response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
-with open('./AHN2_05m_DSM.tif', 'wb') as file:
+with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
 response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
-with open('./AHN2_05m_DTM.tif', 'wb') as file:
+with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
     file.write(response.read())</code></pre>
 </div>
 <p>Reading the raster data with Rasterio is very straightforward.</p>
@@ -1010,11 +1010,13 @@ with open('./AHN2_05m_DTM.tif', 'wb') as file:
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import rasterio
-DSM = rasterio.open("./AHN2_05m_DSM.tif", driver="GTiff")
-DTM = rasterio.open("./AHN2_05m_DTM.tif", driver="GTiff")
+DSM = rasterio.open("./data/AHN2_05m_DSM.tif", driver="GTiff")
+DTM = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
 print(DSM.meta)
-print(DTM.meta)</code></pre>
+print(DTM.meta)
+show(DSM, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
+<p><img src="./images/DSMpje.png" alt="Water pixels of the Netherlands", width = "60%"></p>
 <p>The metadata shows us everything we need to know about the raster data. It shows the driver, datatype, nodata value, width of raster in cells, height of raster in cells, coordinate system and transformation values. This is very valuable information. We can notice that both of the Rasterio objects only have one raster layer. The raster layers can be read as NumPy arrays from the Rasterio object with the method <code>.read()</code>.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
@@ -1036,7 +1038,7 @@ print(DSM.read(1))</code></pre>
 print(type(CHM))
 
 kwargs = DSM.meta # Copy metadata of rasterio.io.DatasetReader
-with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(CHM.astype(rasterio.float32))</code></pre>
 </div>
 <p>The canopy height model gives an indication of the height of trees or buildings. Let's determine the height of individual buildings based on the height raster data. First step is to download building data from the BGT Web Feature Service, that we used yesterday.</p>
@@ -1045,14 +1047,14 @@ with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import geopandas as gpd
-import json
 from owslib.wfs import WebFeatureService
-bgtWfsUrl = 'https://geodata.nationaalgeoregister.nl/beta/bgt/wfs'
-topographicalMapWFS = WebFeatureService(url=bgtWfsUrl, version='2.0.0')
-responseBuildings = topographicalMapWFS.getfeature(typename='bgt:pand', bbox=bbox,
-                                                   maxfeatures=100, outputFormat='json', startindex=0)
-data = json.loads(responseBuildings.read())
-buildingsGDF = gpd.GeoDataFrame.from_features(data['features'])</code></pre>
+WfsUrl = 'https://geodata.nationaalgeoregister.nl/bag/wfs?'
+wfs = WebFeatureService(url=WfsUrl, version='2.0.0')
+layer = list(wfs.contents)[1]
+response = wfs.getfeature(typename=layer, bbox=bbox, outputFormat='application/gml+xml; version=3.2')
+with open('./data/Buildings.gml', 'w') as file:
+    file.write(response.read())
+BuildingsGDF = gpd.read_file('./data/Buildings.gml')</code></pre>
 </div>
 <p>Next step is to perform zonal statistics to get the average height value per building vector. Rasterstats is a specific module for this task. It uses GeoDataFrames and .tif files and outputs <a href="http://geojson.org/">GeoJSON</a>, which is a standard geodata structure.</p>
 <div class="row">
@@ -1060,10 +1062,10 @@ buildingsGDF = gpd.GeoDataFrame.from_features(data['features'])</code></pre>
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import rasterstats as rs
-CHMbuildings = rs.zonal_stats(buildingsGDF, "./AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
-buildingsGDF = gpd.GeoDataFrame.from_features(CHMbuildings)
+CHMbuildings = rs.zonal_stats(BuildingsGDF, "./data/AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
+BuildingsGDF = gpd.GeoDataFrame.from_features(CHMbuildings)
 # check the added columns with a prefix 'CHM_'
-print(buildingsGDF['CHM_mean'])</code></pre>
+print(BuildingsGDF['CHM_mean'])</code></pre>
 </div>
 <p>The GeoJSON can be read by GeoPandas, which makes it easy to access and visualize your data. A quick visualization shows us the heights derived from the raster data on the map.</p>
 <div class="row">
@@ -1073,7 +1075,7 @@ print(buildingsGDF['CHM_mean'])</code></pre>
 <pre style=""><code class="source python">import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, figsize=(10, 10)) # Create one plot with figure size 10 by 10
 ax.set_title('Buildings on the WUR campus and their heights above ground')
-buildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
+BuildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") # Set background to grey
 plt.axis('equal') # Set equal axis 
@@ -1096,7 +1098,7 @@ kwargs = {'driver': 'GTiff',
           'crs': rasterio.crs.CRS({'init': 'epsg:28992'}),
           'transform': affine.Affine(0.5, 0.0, 173600.0, 0.0, -0.5, 444600.0)}
 # kwargs = DSM.meta # Metadata can be copied from existing file if needed
-with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(CHM.astype(rasterio.float32))</code></pre>
 </div>
 <p>Rasterio developers recommend using GTiff as the driver, but rasterio can write most <a href="https://www.gdal.org/formats_list.html">raster formats from GDAL</a>. <a href="https://github.com/mapbox/rasterio/issues/731">The developers recommend using GeoTiff driver</a> for writing as it is the best-tested and best-supported format. We can open the saved GeoTiff and check if the metadata is the same as we specified when writing data. Opening a file is very straightforward with Rasterio.</p>
@@ -1104,7 +1106,7 @@ with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python">CHM = rasterio.open("./AHN2_05m_CHM.tif")
+<pre style=""><code class="source python">CHM = rasterio.open("./data/AHN2_05m_CHM.tif")
 print(CHM.meta)</code></pre>
 </div>
 <h2 id="visualizing-raster-data">Visualizing raster data</h2>
@@ -1132,7 +1134,7 @@ cbar.ax.set_ylabel('Height (m)', rotation=270)
 ax.set_axis_off()
 plt.show()</code></pre>
 </div>
-<p><img src="./images/DSMDTMImage.png" alt="Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
+<p><img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus", width = "100%"></p>
 <p>If you don't like the orange colormap of Matplotlib, it is possible to change to <a href="https://Matplotlib.org/examples/color/colormaps_reference.html">another colormap</a>.</p>
 <p>The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined.</p>
 <div class="row">
@@ -1153,9 +1155,11 @@ plt.show()</code></pre>
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">from rasterio.plot import show_hist
-show_hist(DSM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
-show_hist(DTM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
-show_hist(CHM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")</code></pre>
+fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
+show_hist(DSM, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
+show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
+show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
 <h1 id="exercise-12">Exercise 12</h1>

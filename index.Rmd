@@ -1,5 +1,5 @@
 ---
-author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels"
+author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil"
 title: "Week 3: Lesson 12 Python for raster processing"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -33,10 +33,10 @@ Python has some dedicated packages to handle rasters:
 Start up a new terminal and create a new environment with Python 3, Spyder and some useful Python packages to handle raster data.
 
 ```{r, engine = 'bash', eval=FALSE}
-conda create -n rasterpython -y python=3 pip spyder rasterio geopandas kealib=1.4.7 matplotlib owslib pysal descartes
+conda create -n rasterpython python=3 pip spyder rasterio geopandas kealib matplotlib owslib pysal descartes -y
 conda activate rasterpython
 conda install -c conda-forge rasterstats -y
-conda install kealib=1.4.7 -y
+pip install fiona==1.8.8 -y
 spyder
 ```
 
@@ -141,12 +141,12 @@ x, y = 174100, 444100
 bbox = (x-500, y-500, x+500, y+500)
 response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
-with open('./AHN2_05m_DSM.tif', 'wb') as file:
+with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
 response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
-with open('./AHN2_05m_DTM.tif', 'wb') as file:
+with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
     file.write(response.read())
 ```
 
@@ -154,11 +154,14 @@ Reading the raster data with Rasterio is very straightforward.
 
 ```{r, engine = 'Python', eval=FALSE}
 import rasterio
-DSM = rasterio.open("./AHN2_05m_DSM.tif", driver="GTiff")
-DTM = rasterio.open("./AHN2_05m_DTM.tif", driver="GTiff")
+DSM = rasterio.open("./data/AHN2_05m_DSM.tif", driver="GTiff")
+DTM = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
 print(DSM.meta)
 print(DTM.meta)
+show(DSM, title='Digital Surface Model', cmap='gist_ncar')
 ```
+
+<img src="./images/DSMpje.png" alt="Water pixels of the Netherlands", width = "60%">
 
 The metadata shows us everything we need to know about the raster data. It shows the driver, datatype, nodata value, width of raster in cells, height of raster in cells, coordinate system and transformation values. This is very valuable information. We can notice that both of the Rasterio objects only have one raster layer. The raster layers can be read as NumPy arrays from the Rasterio object with the method `.read()`. 
 
@@ -181,7 +184,7 @@ CHM = DSM.read() - DTM.read()
 print(type(CHM))
 
 kwargs = DSM.meta # Copy metadata of rasterio.io.DatasetReader
-with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(CHM.astype(rasterio.float32))
 ```
 
@@ -190,14 +193,14 @@ The canopy height model gives an indication of the height of trees or buildings.
 
 ```{r, engine = 'Python', eval=FALSE}
 import geopandas as gpd
-import json
 from owslib.wfs import WebFeatureService
-bgtWfsUrl = 'https://geodata.nationaalgeoregister.nl/beta/bgt/wfs'
-topographicalMapWFS = WebFeatureService(url=bgtWfsUrl, version='2.0.0')
-responseBuildings = topographicalMapWFS.getfeature(typename='bgt:pand', bbox=bbox,
-                                                   maxfeatures=100, outputFormat='json', startindex=0)
-data = json.loads(responseBuildings.read())
-buildingsGDF = gpd.GeoDataFrame.from_features(data['features'])
+WfsUrl = 'https://geodata.nationaalgeoregister.nl/bag/wfs?'
+wfs = WebFeatureService(url=WfsUrl, version='2.0.0')
+layer = list(wfs.contents)[1]
+response = wfs.getfeature(typename=layer, bbox=bbox, outputFormat='application/gml+xml; version=3.2')
+with open('./data/Buildings.gml', 'w') as file:
+    file.write(response.read())
+BuildingsGDF = gpd.read_file('./data/Buildings.gml')
 ```
 
 
@@ -206,10 +209,10 @@ Next step is to perform zonal statistics to get the average height value per bui
 
 ```{r, engine = 'Python', eval=FALSE}
 import rasterstats as rs
-CHMbuildings = rs.zonal_stats(buildingsGDF, "./AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
-buildingsGDF = gpd.GeoDataFrame.from_features(CHMbuildings)
+CHMbuildings = rs.zonal_stats(BuildingsGDF, "./data/AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
+BuildingsGDF = gpd.GeoDataFrame.from_features(CHMbuildings)
 # check the added columns with a prefix 'CHM_'
-print(buildingsGDF['CHM_mean'])
+print(BuildingsGDF['CHM_mean'])
 ```
 
 
@@ -220,7 +223,7 @@ The GeoJSON can be read by GeoPandas, which makes it easy to access and visualiz
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, figsize=(10, 10)) # Create one plot with figure size 10 by 10
 ax.set_title('Buildings on the WUR campus and their heights above ground')
-buildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
+BuildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") # Set background to grey
 plt.axis('equal') # Set equal axis 
@@ -244,14 +247,14 @@ kwargs = {'driver': 'GTiff',
           'crs': rasterio.crs.CRS({'init': 'epsg:28992'}),
           'transform': affine.Affine(0.5, 0.0, 173600.0, 0.0, -0.5, 444600.0)}
 # kwargs = DSM.meta # Metadata can be copied from existing file if needed
-with rasterio.open('./AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(CHM.astype(rasterio.float32))
 ```
 
 Rasterio developers recommend using GTiff as the driver, but rasterio can write most [raster formats from GDAL](https://www.gdal.org/formats_list.html). [The developers recommend using GeoTiff driver](https://github.com/mapbox/rasterio/issues/731) for writing as it is the best-tested and best-supported format. We can open the saved GeoTiff and check if the metadata is the same as we specified when writing data. Opening a file is very straightforward with Rasterio.
 
 ```{r, engine = 'Python', eval=FALSE}
-CHM = rasterio.open("./AHN2_05m_CHM.tif")
+CHM = rasterio.open("./data/AHN2_05m_CHM.tif")
 print(CHM.meta)
 ```
 
@@ -281,7 +284,7 @@ ax.set_axis_off()
 plt.show()
 ```
 
-<img src="./images/DSMDTMImage.png" alt="Digital Surface and Terrain Model of WUR Campus", width = "100%">
+<img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus", width = "100%">
 
 If you don't like the orange colormap of Matplotlib, it is possible to change to [another colormap](https://Matplotlib.org/examples/color/colormaps_reference.html).
 
@@ -302,9 +305,11 @@ Rasterio visualizes simple histograms by calling functions of Matplotlib.
 
 ```{r, engine = 'Python', eval=FALSE}
 from rasterio.plot import show_hist
-show_hist(DSM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
-show_hist(DTM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
-show_hist(CHM, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
+show_hist(DSM, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
+show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
+show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+plt.show()
 ```
 
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
