@@ -865,14 +865,14 @@
 <div id="header">
 <h1 class="title">Week 3: Lesson 12 Python for raster processing</h1>
 <h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
-<h3 class="date">12 November, 2019</h3>
+<h3 class="date">14 November, 2019</h3>
 </div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 12 November, 2019</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 14 November, 2019</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -1163,7 +1163,7 @@ plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
 <h1 id="exercise-12">Exercise 12</h1>
-<p>The municipality of Wageningen wants to know the volume of each building on the campus. Work with a project structure and create well-structured scripts with one main script. Create several functions to derive the building volume of buildings on the campus:</p>
+<p>The municipality of Wageningen wants to know the maximum height and total volume of each building on the campus. Work with a project structure and create well-structured scripts with one main script. Create several functions to derive the building volume of buildings on the campus:</p>
 <ul>
 <li>createBoundingBox</li>
 <li>writeGeotiffToFile</li>
@@ -1175,7 +1175,7 @@ plt.show()</code></pre>
 <p>You will be reviewed mainly on the following three tasks and expected output:</p>
 <ol style="list-style-type: decimal">
 <li>Functions that provide the necessary functionality for this exercise.</li>
-<li>Calculate the volumes (m3), per building and for all buildings together. Present result nicely summarized in one table.</li>
+<li>Calculate the volumes (m3) per building. Present the result nicely summarized in one table.</li>
 <li>A nice-looking map visualization of the buildings on the campus and include at least their volumes.</li>
 </ol>
 <p>Optional bonus: Download the data if file does not exist already and store the file locally. Double bonus: Divide buildings in relevant segments that, based on elevation data, significantly differ from each other within the same building.</p>

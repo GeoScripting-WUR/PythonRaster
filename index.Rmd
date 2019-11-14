@@ -317,7 +317,7 @@ plt.show()
 
 # Exercise 12
 
-The municipality of Wageningen wants to know the volume of each building on the campus. Work with a project structure and create well-structured scripts with one main script. Create several functions to derive the building volume of buildings on the campus:
+The municipality of Wageningen wants to know the maximum height and total volume of each building on the campus. Work with a project structure and create well-structured scripts with one main script. Create several functions to derive the building volume of buildings on the campus:
 
 * createBoundingBox
 * writeGeotiffToFile
@@ -329,7 +329,7 @@ The municipality of Wageningen wants to know the volume of each building on the 
 You will be reviewed mainly on the following three tasks and expected output:
 
 1. Functions that provide the necessary functionality for this exercise.
-2. Calculate the volumes (m3), per building and for all buildings together. Present result nicely summarized in one table.
+2. Calculate the volumes (m3) per building. Present the result nicely summarized in one table.
 3. A nice-looking map visualization of the buildings on the campus and include at least their volumes.
 
 Optional bonus: Download the data if file does not exist already and store the file locally.
