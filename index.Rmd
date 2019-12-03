@@ -1,6 +1,6 @@
 ---
 author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil"
-title: "Week 3: Lesson 12 Python for raster processing"
+title: "Week 3: Lesson 11 Python for raster processing"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
@@ -13,7 +13,7 @@ output:
 
 # [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
 
-_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil_ - `r format(Sys.time(), '%d %B, %Y')`
+_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil_  - `r format(Sys.time(), '%d %B, %Y')`
 
 # Handling Raster data with Python
 
@@ -54,6 +54,9 @@ Satellite imagery can easily be processed with Rasterio.  We prepared a Landsat 
 
 ```{r, engine = 'Python', eval=FALSE}
 import os
+if not os.path.exists('data'): os.makedirs('data')
+if not os.path.exists('output'): os.makedirs('output')
+
 import tarfile
 from urllib.request import urlretrieve
 
@@ -193,14 +196,19 @@ The canopy height model gives an indication of the height of trees or buildings.
 
 ```{r, engine = 'Python', eval=FALSE}
 import geopandas as gpd
-from owslib.wfs import WebFeatureService
-WfsUrl = 'https://geodata.nationaalgeoregister.nl/bag/wfs?'
-wfs = WebFeatureService(url=WfsUrl, version='2.0.0')
-layer = list(wfs.contents)[1]
-response = wfs.getfeature(typename=layer, bbox=bbox, outputFormat='application/gml+xml; version=3.2')
-with open('./data/Buildings.gml', 'w') as file:
-    file.write(response.read())
-BuildingsGDF = gpd.read_file('./data/Buildings.gml')
+from requests import Request
+# extract only buildings on and around WUR campus
+url = 'https://geodata.nationaalgeoregister.nl/bag/wfs'
+layer = 'bag:pand' # see wfs.contents
+bb = ','.join(map(str, bbox)) # string of bbox needed for the request url
+# Specify the parameters for fetching the data
+params = dict(service='WFS', version="2.0.0", request='GetFeature',
+      typeName=layer, outputFormat='text/xml; subtype=gml/3.2',
+      srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
+# Parse the URL with parameters
+q = Request('GET', url, params=params).prepare().url
+# Read data from URL
+BuildingsGDF = gpd.read_file(q)
 ```
 
 
@@ -315,7 +323,7 @@ plt.show()
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
 
 
-# Exercise 12
+# Exercise
 
 With the river Rhine nearby, the municipality of Wageningen wants to investigate the floodrange of a potential dikebreach. They hire you to investigate what part of Wageningen will be flooded if the waterlevel will reach up to 10 meters above mean sea level (NAP). 
 

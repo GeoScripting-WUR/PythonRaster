@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil" />
-  <title>Week 3: Lesson 12 Python for raster processing</title>
+  <title>Week 3: Lesson 11 Python for raster processing</title>
   <style type="text/css">code{white-space: pre;}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -863,16 +863,16 @@
 </head>
 <body>
 <div id="header">
-<h1 class="title">Week 3: Lesson 12 Python for raster processing</h1>
+<h1 class="title">Week 3: Lesson 11 Python for raster processing</h1>
 <h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
-<h3 class="date">28 November, 2019</h3>
+<h3 class="date">03 December, 2019</h3>
 </div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 28 November, 2019</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 03 December, 2019</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -914,6 +914,9 @@ spyder</code></pre>
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import os
+if not os.path.exists('data'): os.makedirs('data')
+if not os.path.exists('output'): os.makedirs('output')
+
 import tarfile
 from urllib.request import urlretrieve
 
@@ -1047,14 +1050,19 @@ with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import geopandas as gpd
-from owslib.wfs import WebFeatureService
-WfsUrl = 'https://geodata.nationaalgeoregister.nl/bag/wfs?'
-wfs = WebFeatureService(url=WfsUrl, version='2.0.0')
-layer = list(wfs.contents)[1]
-response = wfs.getfeature(typename=layer, bbox=bbox, outputFormat='application/gml+xml; version=3.2')
-with open('./data/Buildings.gml', 'w') as file:
-    file.write(response.read())
-BuildingsGDF = gpd.read_file('./data/Buildings.gml')</code></pre>
+from requests import Request
+# extract only buildings on and around WUR campus
+url = 'https://geodata.nationaalgeoregister.nl/bag/wfs'
+layer = 'bag:pand' # see wfs.contents
+bb = ','.join(map(str, bbox)) # string of bbox needed for the request url
+# Specify the parameters for fetching the data
+params = dict(service='WFS', version="2.0.0", request='GetFeature',
+      typeName=layer, outputFormat='text/xml; subtype=gml/3.2',
+      srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
+# Parse the URL with parameters
+q = Request('GET', url, params=params).prepare().url
+# Read data from URL
+BuildingsGDF = gpd.read_file(q)</code></pre>
 </div>
 <p>Next step is to perform zonal statistics to get the average height value per building vector. Rasterstats is a specific module for this task. It uses GeoDataFrames and .tif files and outputs <a href="http://geojson.org/">GeoJSON</a>, which is a standard geodata structure.</p>
 <div class="row">
@@ -1162,7 +1170,7 @@ show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Hist
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
-<h1 id="exercise-12">Exercise 12</h1>
+<h1 id="exercise">Exercise</h1>
 <p>With the river Rhine nearby, the municipality of Wageningen wants to investigate the floodrange of a potential dikebreach. They hire you to investigate what part of Wageningen will be flooded if the waterlevel will reach up to 10 meters above mean sea level (NAP).</p>
 <ul>
 <li>Work with a project structure and create well-structured scripts with one main script. Make a main.py module that imports functions from another Python module called 'MyFunctions_RasterExc.py'. You may like to reuse the functions of yesterday! At least in this module we expect the following three (new) functions:
