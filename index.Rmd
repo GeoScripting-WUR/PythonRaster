@@ -322,31 +322,6 @@ plt.show()
 
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
 
-
-# Exercise
-
-With the river Rhine nearby, the municipality of Wageningen wants to investigate the floodrange of a potential dikebreach. They hire you to investigate what part of Wageningen will be flooded if the waterlevel will reach up to 10 meters above mean sea level (NAP). 
-
-* Work with a project structure and create well-structured scripts with one main script. Make a main.py module that imports functions from another Python module called 'MyFunctions_RasterExc.py'. You may like to reuse the functions of yesterday! At least in this module we expect the following three (new) functions:
-    1. Reuse the function GeocodePlacenameToGDF of the previous model and use here 'Wageningen' as seach term to extract the geometry of the municipality.
-    2. AHN2_5m_forStudyArea => a function that, for given boundary box, extracts AHN2 DTM raster data with 5m resolution. Use the [AHN2 WFS](http://geodata.nationaalgeoregister.nl/ahn2/wcs?service=WCS) with layer 'ahn2_5m'. mind that this is a 5 meter resolution raster :)
-    3. CalcFloodMap => a function that, given a DTM and waterheight, reclassifies the DTM to a waterdepth map. No need for complex flood models for now, simply assume that locations below the given waterheight will be flooded.
-    
-* We expect a couple of results that are:
-    1. FloodMap => GeoTiff that represents the waterdepth (meters) for the flooded areas in Wageningen
-    2. A number of statistics derived from the FloodMap:
-        *MaxWaterdepth (m)
-        *AverageWaterdepth (m)
-        *PercWaterCoverage (%)
-    3. A (either static or dynamic) map with the waterdepth in meters including the geometry outline of Wageningen municipality
-    
-You will be reviewed mainly on the following three tasks and expected output:
-1. Functions that provide the necessary functionality for this exercise.
-2. Calculate the required statistics above
-3. A nice-looking map visualization of the waterdepth.
-
-Upload your well structured project to a GitLab repository.
-
 ## Extra info
 
   * [Landsat satellite images](https://earthexplorer.usgs.gov/)

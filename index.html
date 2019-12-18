@@ -865,14 +865,14 @@
 <div id="header">
 <h1 class="title">Week 3: Lesson 11 Python for raster processing</h1>
 <h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
-<h3 class="date">03 December, 2019</h3>
+<h3 class="date">18 December, 2019</h3>
 </div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 03 December, 2019</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 18 December, 2019</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -1170,24 +1170,6 @@ show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Hist
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
-<h1 id="exercise">Exercise</h1>
-<p>With the river Rhine nearby, the municipality of Wageningen wants to investigate the floodrange of a potential dikebreach. They hire you to investigate what part of Wageningen will be flooded if the waterlevel will reach up to 10 meters above mean sea level (NAP).</p>
-<ul>
-<li>Work with a project structure and create well-structured scripts with one main script. Make a main.py module that imports functions from another Python module called 'MyFunctions_RasterExc.py'. You may like to reuse the functions of yesterday! At least in this module we expect the following three (new) functions:
-<ol style="list-style-type: decimal">
-<li>Reuse the function GeocodePlacenameToGDF of the previous model and use here 'Wageningen' as seach term to extract the geometry of the municipality.</li>
-<li>AHN2_5m_forStudyArea =&gt; a function that, for given boundary box, extracts AHN2 DTM raster data with 5m resolution. Use the <a href="http://geodata.nationaalgeoregister.nl/ahn2/wcs?service=WCS">AHN2 WFS</a> with layer 'ahn2_5m'. mind that this is a 5 meter resolution raster :)</li>
-<li>CalcFloodMap =&gt; a function that, given a DTM and waterheight, reclassifies the DTM to a waterdepth map. No need for complex flood models for now, simply assume that locations below the given waterheight will be flooded.</li>
-</ol></li>
-<li>We expect a couple of results that are:
-<ol style="list-style-type: decimal">
-<li>FloodMap =&gt; GeoTiff that represents the waterdepth (meters) for the flooded areas in Wageningen</li>
-<li>A number of statistics derived from the FloodMap: <em>MaxWaterdepth (m) </em>AverageWaterdepth (m) *PercWaterCoverage (%)</li>
-<li>A (either static or dynamic) map with the waterdepth in meters including the geometry outline of Wageningen municipality</li>
-</ol></li>
-</ul>
-<p>You will be reviewed mainly on the following three tasks and expected output: 1. Functions that provide the necessary functionality for this exercise. 2. Calculate the required statistics above 3. A nice-looking map visualization of the waterdepth.</p>
-<p>Upload your well structured project to a GitLab repository.</p>
 <h2 id="extra-info">Extra info</h2>
 <ul>
 <li><a href="https://earthexplorer.usgs.gov/">Landsat satellite images</a></li>
