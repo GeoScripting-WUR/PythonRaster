@@ -1,6 +1,6 @@
 ---
 author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil"
-title: "Week 3: Lesson 11 Python for raster processing"
+pagetitle: "Week 3, Lesson 11: Python for raster processing"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
@@ -11,9 +11,9 @@ output:
     highlight.chooser: TRUE
 ---
 
-# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
+# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="https://www.wur.nl/upload/5e55a1d9-47c3-4149-9384-26d5147ee2d7_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
 
-_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil_  - `r format(Sys.time(), '%d %B, %Y')`
+_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Corné Vreugdenhil_  - `r format(Sys.time(), '%Y-%m-%d')`
 
 # Handling Raster data with Python
 
@@ -98,7 +98,7 @@ water = np.where(mndwi > 0, 1, 0) # Set values above 0 as water and otherwise le
 show(water, cmap='Blues')
 ```
 
-<img src="./images/waterImage.png" alt="Water pixels of the Netherlands", width = "60%">
+<img src="./images/waterImage.png" alt="Water pixels of the Netherlands" width = "60%">
 
 Since Rasterio uses numpy arrays, it is very easy to use numpy functions to help you. The np.logical_or computes the truth value of either of the two arrays. The np.where function returns the second or third argument if condition is correctly met.
 
@@ -164,7 +164,7 @@ print(DTM.meta)
 show(DSM, title='Digital Surface Model', cmap='gist_ncar')
 ```
 
-<img src="./images/DSMpje.png" alt="Water pixels of the Netherlands", width = "60%">
+<img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%">
 
 The metadata shows us everything we need to know about the raster data. It shows the driver, datatype, nodata value, width of raster in cells, height of raster in cells, coordinate system and transformation values. This is very valuable information. We can notice that both of the Rasterio objects only have one raster layer. The raster layers can be read as NumPy arrays from the Rasterio object with the method `.read()`. 
 
@@ -238,7 +238,7 @@ plt.axis('equal') # Set equal axis
 plt.show() # Visualize figure 
 ```
 
-<img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height", width = "100%">
+<img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%">
 
 ## Writing raster data to file
 
@@ -292,7 +292,7 @@ ax.set_axis_off()
 plt.show()
 ```
 
-<img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus", width = "100%">
+<img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus" width = "100%">
 
 If you don't like the orange colormap of Matplotlib, it is possible to change to [another colormap](https://Matplotlib.org/examples/color/colormaps_reference.html).
 
@@ -307,7 +307,7 @@ show(CHM, ax=axchm, title='CHM')
 plt.show()
 ```
 
-<img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
+<img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
 
 Rasterio visualizes simple histograms by calling functions of Matplotlib. 
 
@@ -320,7 +320,7 @@ show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Hist
 plt.show()
 ```
 
-<img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%">
+<img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
 
 ## Extra info
 
