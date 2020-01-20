@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil" />
-  <title>Week 3: Lesson 11 Python for raster processing</title>
+  <title>Week 3, Lesson 11: Python for raster processing</title>
   <style type="text/css">code{white-space: pre;}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -862,17 +862,12 @@
   </style>
 </head>
 <body>
-<div id="header">
-<h1 class="title">Week 3: Lesson 11 Python for raster processing</h1>
-<h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
-<h3 class="date">20 January, 2020</h3>
-</div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
-<h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 20 January, 2020</p>
+<h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/5e55a1d9-47c3-4149-9384-26d5147ee2d7_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Corné Vreugdenhil</em> - 2020-01-20</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -954,7 +949,7 @@ mndwi = np.where(check, (green - mir) / (green + mir), -999)  # Calculate MNDWI
 water = np.where(mndwi > 0, 1, 0) # Set values above 0 as water and otherwise leave it at 0
 show(water, cmap='Blues')</code></pre>
 </div>
-<p><img src="./images/waterImage.png" alt="Water pixels of the Netherlands", width = "60%"></p>
+<p><img src="./images/waterImage.png" alt="Water pixels of the Netherlands" width = "60%"></p>
 <p>Since Rasterio uses numpy arrays, it is very easy to use numpy functions to help you. The np.logical_or computes the truth value of either of the two arrays. The np.where function returns the second or third argument if condition is correctly met.</p>
 <h2 id="raster-data-get-it-handle-it-and-visualize-it.">Raster data: get it, handle it and visualize it.</h2>
 <p>The rest of the lesson below is a complete route of handling a rasterdataset. We will extract a DEM from an WCS service for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it nicely.</p>
@@ -1016,7 +1011,7 @@ print(DSM.meta)
 print(DTM.meta)
 show(DSM, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
-<p><img src="./images/DSMpje.png" alt="Water pixels of the Netherlands", width = "60%"></p>
+<p><img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%"></p>
 <p>The metadata shows us everything we need to know about the raster data. It shows the driver, datatype, nodata value, width of raster in cells, height of raster in cells, coordinate system and transformation values. This is very valuable information. We can notice that both of the Rasterio objects only have one raster layer. The raster layers can be read as NumPy arrays from the Rasterio object with the method <code>.read()</code>.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
@@ -1086,7 +1081,7 @@ ax.set_facecolor("lightgray") # Set background to grey
 plt.axis('equal') # Set equal axis 
 plt.show() # Visualize figure </code></pre>
 </div>
-<p><img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height", width = "100%"></p>
+<p><img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%"></p>
 <h2 id="writing-raster-data-to-file">Writing raster data to file</h2>
 <p>To store the numpy array, Rasterio needs to combine metadata and the raster data. It is possible to use the metadata of the DSM or DTM that you had before, but the metadata can also be created from scratch. The CRS needs to be defined with a function from Rasterio and the transformation needs to be defined with Affine. Affine is a Python module that facilitates <a href="https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image">affine transformations</a>, i.e. scaling, rotating, mirroring or skewing of images/rasters/arrays.</p>
 <div class="row">
@@ -1139,7 +1134,7 @@ cbar.ax.set_ylabel('Height (m)', rotation=270)
 ax.set_axis_off()
 plt.show()</code></pre>
 </div>
-<p><img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus", width = "100%"></p>
+<p><img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus" width = "100%"></p>
 <p>If you don't like the orange colormap of Matplotlib, it is possible to change to <a href="https://Matplotlib.org/examples/color/colormaps_reference.html">another colormap</a>.</p>
 <p>The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined.</p>
 <div class="row">
@@ -1153,7 +1148,7 @@ show(DTM, ax=axdtm, title='DTM')
 show(CHM, ax=axchm, title='CHM')
 plt.show()</code></pre>
 </div>
-<p><img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
+<p><img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%"></p>
 <p>Rasterio visualizes simple histograms by calling functions of Matplotlib.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
@@ -1166,7 +1161,7 @@ show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Hist
 show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
 plt.show()</code></pre>
 </div>
-<p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus", width = "100%"></p>
+<p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%"></p>
 <h2 id="extra-info">Extra info</h2>
 <ul>
 <li><a href="https://earthexplorer.usgs.gov/">Landsat satellite images</a></li>
