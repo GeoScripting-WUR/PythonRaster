@@ -865,14 +865,14 @@
 <div id="header">
 <h1 class="title">Week 3: Lesson 11 Python for raster processing</h1>
 <h2 class="author">Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</h2>
-<h3 class="date">18 December, 2019</h3>
+<h3 class="date">20 January, 2020</h3>
 </div>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 18 December, 2019</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil</em> - 20 January, 2020</p>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
@@ -885,16 +885,13 @@
 <li><a href="https://en.wikipedia.org/wiki/GDAL">GDAL</a> is powerful library for reading, writing and warping raster datasets</li>
 <li><a href="https://pysal.readthedocs.io/en/latest/">PySAL</a> is library for spatial analysis functions</li>
 </ul>
-<p>Start up a new terminal and create a new environment with Python 3, Spyder and some useful Python packages to handle raster data.</p>
+<p>We can use the existing 'geoscripting' environment. If you don't have this one yet, create quickly this one with the bash scripts below. this one installs a conda environment with all packages (and versions) that don't conflict with each other for this course.</p>
 <div class="row">
 <button class="source bash toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> bash source
 </button>
-<pre style=""><code class="source bash">conda create -n rasterpython python=3 pip spyder rasterio geopandas kealib matplotlib owslib pysal descartes -y
-conda activate rasterpython
-conda install -c conda-forge rasterstats -y
-pip install fiona==1.8.8 -y
-spyder</code></pre>
+<pre style=""><code class="source bash">wget https://raw.githubusercontent.com/GeoScripting-WUR/InstallLinuxScript/master/user/environment.yml
+conda env create -f environment.yml</code></pre>
 </div>
 <p>You should have just started Spyder with the correct conda environment. Did you notice what the code did?</p>
 <div class="row">

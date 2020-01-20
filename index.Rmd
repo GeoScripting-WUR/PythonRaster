@@ -30,14 +30,11 @@ Python has some dedicated packages to handle rasters:
 * [GDAL](https://en.wikipedia.org/wiki/GDAL) is powerful library for reading, writing and warping raster datasets
 * [PySAL](https://pysal.readthedocs.io/en/latest/) is library for spatial analysis functions
 
-Start up a new terminal and create a new environment with Python 3, Spyder and some useful Python packages to handle raster data.
+We can use the existing 'geoscripting' environment. If you don't have this one yet, create quickly this one with the bash scripts below. this one installs a conda environment with all packages (and versions) that don't conflict with each other for this course.
 
-```{r, engine = 'bash', eval=FALSE}
-conda create -n rasterpython python=3 pip spyder rasterio geopandas kealib matplotlib owslib pysal descartes -y
-conda activate rasterpython
-conda install -c conda-forge rasterstats -y
-pip install fiona==1.8.8 -y
-spyder
+```{r, eval=FALSE, engine='bash'}
+wget https://raw.githubusercontent.com/GeoScripting-WUR/InstallLinuxScript/master/user/environment.yml
+conda env create -f environment.yml
 ```
 
 You should have just started Spyder with the correct conda environment. Did you notice what the code did?
