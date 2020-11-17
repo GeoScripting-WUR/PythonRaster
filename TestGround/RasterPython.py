@@ -99,12 +99,12 @@ with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
 import geopandas as gpd
 from requests import Request
 # extract only buildings on and around WUR campus
-url = 'https://geodata.nationaalgeoregister.nl/bag/wfs'
+url = 'https://geodata.nationaalgeoregister.nl/bag/wfs/v1_1'
 layer = 'bag:pand' # see wfs.contents
 bb = ','.join(map(str, bbox)) # string of bbox needed for the request url
 # Specify the parameters for fetching the data
-params = dict(service='WFS', version="2.0.0", request='GetFeature',
-      typeName=layer, outputFormat='text/xml; subtype=gml/3.2',
+params = dict(service='WFS', version="1.1.0", request='GetFeature',
+      typeName=layer, outputFormat='json',
       srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
 # Parse the URL with parameters
 q = Request('GET', url, params=params).prepare().url
