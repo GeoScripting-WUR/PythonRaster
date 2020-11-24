@@ -873,7 +873,7 @@
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/5e55a1d9-47c3-4149-9384-26d5147ee2d7_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
 <h1 id="handling-raster-data-with-python">Handling Raster data with Python</h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Corné Vreugdenhil</em> - 2020-11-17</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Corné Vreugdenhil</em> - 2020-11-24</p>
 <h2 id="introduction">Introduction</h2>
 <p>Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
 <ul>
@@ -893,16 +893,7 @@
 <pre style=""><code class="source bash">wget https://raw.githubusercontent.com/GeoScripting-WUR/InstallLinuxScript/master/user/environment.yml
 conda env create -f environment.yml</code></pre>
 </div>
-<p>You should have just started Spyder with the correct conda environment. Did you notice what the code did?</p>
-<div class="row">
-<div class="alert alert-success">
-<blockquote>
-<p>
-<strong>Question 1</strong>: What Python packages need to be installed from the conda-forge channel?
-</p>
-</blockquote>
-</div>
-</div>
+<p>Activate the ‘geoscripting’ conda environment and start up Spyder</p>
 <p><a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a> is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code.</p>
 <h2 id="processing-satellite-images">Processing satellite images</h2>
 <p>Satellite imagery can easily be processed with Rasterio. We prepared a Landsat image with all bands processed to surface reflectance (Level 1T). You can download it from <a href="https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=0">here</a>. Unzip the file and you will see that it contains all the invidual bands. Below we made a script to download the tarfile directly from the dropbox repository.</p>
@@ -923,6 +914,7 @@ tarfilename = directory + "landsat.tar.gz"
 if not os.path.exists(directory):
     os.makedirs(directory)
 
+## note: downloading and extracting this landsat image (~400mb) might take a while, depending on your internet connection!
 if not os.path.isfile(tarfilename):
     url = 'https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=1'
     urlretrieve(url, tarfilename)
@@ -1081,7 +1073,7 @@ print(BuildingsGDF['CHM_mean'])</code></pre>
 <pre style=""><code class="source python">import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, figsize=(10, 10)) # Create one plot with figure size 10 by 10
 ax.set_title('Buildings on the WUR campus and their heights above ground')
-BuildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
+BuildingsGDF.plot(ax=ax, column='CHM_mean', k=6, 
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") # Set background to grey
 plt.axis('equal') # Set equal axis 
@@ -1165,6 +1157,9 @@ fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
 show_hist(DSM, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
 show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
 show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+axdsm.legend(['DSM'])
+axdtm.legend(['DTM'])
+axchm.legend(['CHM'])
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%"></p>

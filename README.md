@@ -1,2 +1,2 @@
 # PythonRaster
-Lesson to learn how to process rasters easily with Python scripts 
+Lesson 11 of Geo-scripting course to learn how to acquire, process and visualize raster data in Python

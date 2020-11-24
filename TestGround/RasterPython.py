@@ -3,7 +3,7 @@
 """
 Geoscripting 2020
 Lesson 11 - Python Raster
-v20191203
+v20201124
 CHappyhill
 """
 import os
@@ -72,7 +72,6 @@ DTM = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
 print(DSM.meta)
 print(DTM.meta)
 show(DSM, title='Digital Surface Model', cmap='gist_ncar')
-#plt.savefig('test.png') ## seems not to work!
 
 print(type(DSM))
 print(type(DSM.read(1)))
@@ -85,16 +84,6 @@ print(type(CHM))
 kwargs = DSM.meta # Copy metadata of rasterio.io.DatasetReader
 with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(CHM.astype(rasterio.float32))
-
-#import geopandas as gpd
-#import json
-#from owslib.wfs import WebFeatureService
-#bgtWfsUrl = 'https://geodata.nationaalgeoregister.nl/beta/bgt/wfs'
-#topographicalMapWFS = WebFeatureService(url=bgtWfsUrl, version='2.0.0')
-#responseBuildings = topographicalMapWFS.getfeature(typename='bgt:pand', bbox=bbox,
-#                                                   maxfeatures=100, outputFormat='json', startindex=0)
-#data = json.loads(responseBuildings.read())
-#buildingsGDF = gpd.GeoDataFrame.from_features(data['features'])
 
 import geopandas as gpd
 from requests import Request
@@ -120,7 +109,7 @@ print(BuildingsGDF['CHM_mean'])
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, figsize=(10, 10)) # Create one plot with figure size 10 by 10
 ax.set_title('Buildings on the WUR campus and their heights above ground')
-BuildingsGDF.plot(ax=ax, column='CHM_mean', scheme='fisher_jenks', k=6, 
+BuildingsGDF.plot(ax=ax, column='CHM_mean', k=6, 
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") # Set background to grey
 plt.axis('equal') # Set equal axis 
@@ -176,12 +165,12 @@ fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
 show_hist(DSM, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
 show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
 show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+axdsm.legend(['DSM'])
+axdtm.legend(['DTM'])
+axchm.legend(['CHM'])
 plt.show()
-#plt.savefig('./outputimages/DSMDTMCHMHistogram.png')
 
-
-
-
+plt.savefig('./images/DSMDTMCHMHistogram2.png')
 
 
 
