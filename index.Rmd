@@ -56,9 +56,6 @@ from urllib.request import urlretrieve
 directory = './data/'
 tarfilename = directory + "landsat.tar.gz"
 
-if not os.path.exists(directory):
-    os.makedirs(directory)
-
 ## note: downloading and extracting this landsat image (~400mb) might take a while, depending on your internet connection!
 if not os.path.isfile(tarfilename):
     url = 'https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=1'
