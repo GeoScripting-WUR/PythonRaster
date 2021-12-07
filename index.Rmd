@@ -1,5 +1,5 @@
 ---
-author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Corné Vreugdenhil"
+author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil"
 pagetitle: "Week 3, Lesson 11: Python for raster processing | geoscripting"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -15,229 +15,256 @@ output:
 
 # Week 3, Lesson 11: Handling Raster data with Python
 
-_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Corné Vreugdenhil_  - `r format(Sys.time(), '%Y-%m-%d')`
+_Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil_  - `r format(Sys.time(), '%Y-%m-%d')`
 
 ## Introduction
 
-Howdy. Good morning. Today we will be playing with Python packages for spatial raster analysis.
-Python has some dedicated packages to handle rasters:
+Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:
 
-* [Rasterio](https://Rasterio.readthedocs.io/en/latest/) reads and writes geospatial raster data
-* [NumPy](http://www.numpy.org/) is fundamental package for scientific computing, such as array calculations
-* [rasterstats](https://pythonhosted.org/rasterstats/) summarizes geospatial raster datasets based on vector geometires
 * [OWSLib](https://geopython.github.io/OWSLib/) to download geospatial raster data from Web Coverage Services
-* [Matplotlib](https://Matplotlib.org/) for publication quality plotting
-* [GDAL](https://en.wikipedia.org/wiki/GDAL) is powerful library for reading, writing and warping raster datasets
-* [PySAL](https://pysal.readthedocs.io/en/latest/) is library for spatial analysis functions
+* [GDAL](https://gdal.org/api/python.html) is powerful library for reading, writing and warping raster datasets
+* [Rasterio](https://Rasterio.readthedocs.io/en/latest/) reads and writes geospatial raster data
+* [NumPy](http://www.numpy.org/) is fundamental package for scientific computing, such as array (thus raster) calculations
+* [rasterstats](https://pythonhosted.org/rasterstats/) summarizes geospatial raster datasets based on vector geometires
 
-We can use the existing 'geoscripting' environment. If you don't have this one yet, create quickly this one with the bash scripts below. this one installs a conda environment with all packages (and versions) that don't conflict with each other for this course.
+We can use the existing 'geoscripting' environment. Activate the 'geoscripting' conda environment and start up Spyder, as you have learned in the last two lessions.
 
-```{r, eval=FALSE, engine='bash'}
-wget https://raw.githubusercontent.com/GeoScripting-WUR/InstallLinuxScript/master/user/environment.yml
-conda env create -f environment.yml
-```
+## Reading raster data and accessing metadata
 
-Activate the 'geoscripting' conda environment and start up Spyder
+### Via a Web Coverage Service
 
-[Rasterio](https://Rasterio.readthedocs.io/en/latest/intro.html) is the main package we will use today. Before Rasterio there was one Python option for accessing the many different kind of raster data files used in the GIS field: the Python bindings distributed with the Geospatial Data Abstraction Library [GDAL]. These bindings extend Python, but provide little abstraction for GDAL’s C API. This means that Python programs using them tend to read and run like C programs. For example, GDAL’s Python bindings require users to watch out for dangling C pointers and potential crashers of programs. This is bad. Among other considerations Rasterio chose Python instead of C to avoid problems with pointers. Rasterio strives to use modern Python language features and idioms. Rasterio is about high performance, lower cognitive load, cleaner and more transparent code.
+A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. [Web Coverage Services](https://www.opengeospatial.org/standards/wcs) are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A [Web Map Service](https://www.opengeospatial.org/standards/wms) [WMS] also exists for rasters; it allows downloading of images but without the data values.
 
-## Processing satellite images
-
-Satellite imagery can easily be processed with Rasterio.  We prepared a Landsat image with all bands processed to surface reflectance (Level 1T). You can download it from [here](https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=0). Unzip the file and you will see that it contains all the invidual bands. Below we made a script to download the tarfile directly from the dropbox repository.
-
-```{r, engine = 'Python', eval=FALSE}
-import os
-if not os.path.exists('data'): os.makedirs('data')
-if not os.path.exists('output'): os.makedirs('output')
-
-import tarfile
-from urllib.request import urlretrieve
-
-directory = './data/'
-tarfilename = directory + "landsat.tar.gz"
-
-## note: downloading and extracting this landsat image (~400mb) might take a while, depending on your internet connection!
-if not os.path.isfile(tarfilename):
-    url = 'https://www.dropbox.com/s/zb7nrla6fqi1mq4/LC81980242014260-SC20150123044700.tar.gz?dl=1'
-    urlretrieve(url, tarfilename)
-    tar = tarfile.open(tarfilename)
-    tar.extractall(path=directory)
-    tar.close()
-```
-
-Okay we have the satellite images. Let's calculate the Modified Normalized Difference Water Index [[MNDWI](https://www.researchgate.net/publication/232724072_Modification_of_Normalized_Difference_Water_Index_NDWI_to_Enhance_Open_Water_Features_in_Remotely_Sensed_Imagery)] for water body mapping. Values above 0 are water and values below 0 are not water.
-
-`MNDWI = (green - MIR) / (green + MIR)`
-
-```{r, engine = 'Python', eval=FALSE}
-import numpy as np
-import rasterio
-from rasterio.plot import show
-
-greenband = rasterio.open(directory + "LC81980242014260LGN00_sr_band4.tif")
-mirband = rasterio.open(directory + "LC81980242014260LGN00_sr_band6.tif")
-
-green = greenband.read(1).astype(float)
-mir = mirband.read(1).astype(float)
-
-np.seterr(divide='ignore', invalid='ignore')  # Allow division by zero
-mndwi = np.empty(greenband.shape, dtype=rasterio.float32)  # Create empty matrix
-check = np.logical_or(mir > 0.0, green > 0.0)  # Create check raster with True/False values
-mndwi = np.where(check, (green - mir) / (green + mir), -999)  # Calculate MNDWI
-
-water = np.where(mndwi > 0, 1, 0) # Set values above 0 as water and otherwise leave it at 0
-show(water, cmap='Blues')
-```
-
-<img src="./images/waterImage.png" alt="Water pixels of the Netherlands" width = "60%">
-
-Since Rasterio uses numpy arrays, it is very easy to use numpy functions to help you. The np.logical_or computes the truth value of either of the two arrays. The np.where function returns the second or third argument if condition is correctly met.
-
-## Raster data: get it, handle it and visualize it.
-The rest of the lesson below is a complete route of handling a rasterdataset. We will extract a DEM from an WCS service for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it nicely.
-
-## Reading raster data with OWSLib and Rasterio
-
-Raster data can be read from a file or from a Web Coverage Service [WCS]. Web Coverage Services load raster data in a similar way as Web Feature Services [WFS] load vector data. [Web Coverage Services](https://www.opengeospatial.org/standards/wcs) are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A [Web Map Service](https://www.opengeospatial.org/standards/wms) [WMS] allows downloading of images but without the data values. Web Map Services serve the map images as visualizations.
-
-Today we will work with some height rasters. Have a look at the Web Coverage Service of the AHN dataset. AHN stands for "Actueel Hoogtebestand Nederland" and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents.
+Today we will work with elevation rasters. Have a look at the WCS of the AHN dataset. AHN stands for "Actueel Hoogtebestand Nederland" and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents.
 
 ```{r, engine = 'Python', eval=FALSE}
 from owslib.wcs import WebCoverageService
+
+# Access the WCS by proving the url and optional arguments (here version)
 wcs = WebCoverageService('http://geodata.nationaalgeoregister.nl/ahn2/wcs?service=WCS', version='1.0.0')
+# Print to check the contents of the WCS
 print(list(wcs.contents))
 ```
 
-The Web Coverage Service of the AHN2 has four contents: 0.5m interpolated, 0.5m not interpolated, 0.5m rough and 5m. The meters identify the cell size. Raster data of AHN has the projected coordinate system RD_New (EPSG: 28992).
+Running the last line of code shows that the Web Coverage Service of the AHN2 contains four rasters: 0.5m interpolated, 0.5m not interpolated, 0.5m rough, and 5m. The meters identify the cell size. Raster data of AHN has the projected coordinate system RD_New (EPSG: 28992).
 
+We can also check what types of operations are available in the WCS:
 
 ```{r, engine = 'Python', eval=FALSE}
+# Get all operations and print the name of each of them
 print([op.name for op in wcs.operations])
 ```
 
+You will see that the Web Coverage Service allows accessing the data (GetCoverage), the metadata (DescribeCoverage), and the capabilities (GetCapabilities). These are all standard protocols defined by the OGC.
 
-The Web Coverage Service can be accessed for it's data (GetCoverage), metadata (DescribeCoverage) or capabilities (GetCapabilities). These are all standard protocols defined by the OGC, which makes it easy to access the geodata via web services. Thank you Open Geospatial Consortium!
-
+Several functions are available to access specific metadata of each individual raster, for example:
 
 ```{r, engine = 'Python', eval=FALSE}
+# Take the 0.5m-resolution rough raster as example
 cvg = wcs.contents['ahn2_05m_ruw']
-print(cvg.boundingBoxWGS84)
+# print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats
 print(cvg.supportedCRS)
+print(cvg.boundingBoxWGS84)
 print(cvg.supportedFormats)
 ```
 
-The metadata of each content is accessible. Supported formats for AHN are GeoTIFF with different data types.
+Let us have a look at the data. We do not want to overload the web service. Therefore, we download once and store the data locally. 
 
-Let's have a look at the data. We don't want to overload the web service. So when we download once and store the data locally, we can use the data multiple times without having to call the web service again. Download the Digital Surface Model [DSM], which is the the 'ahn2_05m_ruw' version, and Digital Terrain Model [DTM], which is the 'ahn2_05m_int' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
+Download the Digital Surface Model [DSM], which is the the 'ahn2_05m_ruw' version, and Digital Terrain Model [DTM], which is the 'ahn2_05m_int' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
 
 ```{r, engine = 'Python', eval=FALSE}
+import os
+
+# Define a bounding box in the availble crs (see before) by picking a point and drawing a 1x1 km box around it
 x, y = 174100, 444100
 bbox = (x-500, y-500, x+500, y+500)
-response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32',
-                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+
+# Request the DSM data from the WCS
+response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+
+# Write the data to a local file in the 'data' folder (it should exist)
 with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
-response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32',
-                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+# Do the same for the DTM
+response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+
+# Create a data directoty within the directory where this script is run if it does not exist yet and store file
+if not os.path.exists('data'): os.makedirs('data')
+
 with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
     file.write(response.read())
 ```
 
-Reading the raster data with Rasterio is very straightforward.
+### From a file with GDAL
+[GDAL](https://gdal.org/) handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
+
+<img src="./images/gdal.png" alt="gdal structure" width = "90%">
+
+Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
+
+```{r, engine = 'Python', eval=FALSE}
+import gdal
+
+# Open dataset, gdal automatically selects the correct driver
+ds = gdal.Open("./data/AHN2_05m_DTM.tif" )
+
+# Get the band (band number 1)
+band = ds.GetRasterBand(1)
+        
+# Get the data array
+data = band.ReadAsArray()
+print(data)
+
+# Delete objects to close the file
+ds = None
+```
+
+The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module. 
+
+
+### From a file with Rasterio
+
+[Rasterio](https://Rasterio.readthedocs.io/en/latest/intro.html) reads and writes multiple raster formats based on GDAL, provides raster processing functions based on NumPy arrays and GeoJSON, and integrates matplotlib in the module rasterio.plot for visualization. Rasterio handles multiple bands, [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html), and [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html).
+
+The rest of the lesson below is a complete route of handling a rasterdataset. We will use the DEMs from a the WCS for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it.
+
+Let us read in the raster data we just stored from the WCS with rasterio and plot it with rasterio.plot:
 
 ```{r, engine = 'Python', eval=FALSE}
 import rasterio
-DSM = rasterio.open("./data/AHN2_05m_DSM.tif", driver="GTiff")
-DTM = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
-print(DSM.meta)
-print(DTM.meta)
-show(DSM, title='Digital Surface Model', cmap='gist_ncar')
+from rasterio.plot import show
+
+# open the two rasters 
+dsm = rasterio.open("./data/AHN2_05m_DSM.tif", driver="GTiff")
+dtm = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
+
+# metadata functions from rasterio
+print(dsm.meta)
+print(dtm.meta)
+
+# plot with rasterio.plot, which provides matplotlib functionality
+show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 ```
 
 <img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%">
 
-The metadata shows us everything we need to know about the raster data. It shows the driver, datatype, nodata value, width of raster in cells, height of raster in cells, coordinate system and transformation values. This is very valuable information. We can notice that both of the Rasterio objects only have one raster layer. The raster layers can be read as NumPy arrays from the Rasterio object with the method `.read()`.
+The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
+
+In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when they data are read with the method `.read()`:
 
 ```{r, engine = 'Python', eval=FALSE}
-print(type(DSM))
-print(type(DSM.read(1)))
 
-print(DSM.read(1))
+# rasterio object
+print(type(dsm))
+
+# read, show object type and data
+dsm_data = dsm.read(1)
+print(type(dsm_data))
+print(dsm_data)
 ```
-
-On the backend of Rasterio the rasters are stored as NumPy arrays. This makes it easy to perform array calculations.
-
 
 ## Processing raster data
 
-Rasterio can do advanced raster processing. It handles multiple bands, [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html),  [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html) and array calculations. Often rasters need to be combined to get to the information you need. A Canopy Height Model [CHM] can be created by simply subtracting a Digital Terrain Model from a Digital Surface Model. Each pixel in the CHM represents the tree overstory height above the underlying ground topography. Rasterio relies on NumPy to perform the array calcuations. Numpy arrays can be subtracted, added or indexed with multiple raster layers.
+### Computing a Canopy Height Model
+
+A Canopy Height Model (CHM) gives an indication of the height of trees. It can be created by subtracting a Digital Terrain Model from a Digital Surface Model. In the resulting raster, each cell value represents the tree overstory height above the underlying surface topography. Rasterio relies on NumPy to perform raster point operations. 
 
 ```{r, engine = 'Python', eval=FALSE}
-CHM = DSM.read() - DTM.read()
-print(type(CHM))
+# access the data from the two rasters
+dsm_data = dsm.read()
+dtm_data = dtm.read()
+# subtract the NumPy arrays 
+chm = dsm_data - dtm_data
+# check the resulting array
+print(chm)
 
-kwargs = DSM.meta # Copy metadata of rasterio.io.DatasetReader
+# Copy metadata of one of the rasters (does not matter which one)
+kwargs = dsm.meta 
+# save the chm as a raster
 with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
-    file.write(CHM.astype(rasterio.float32))
+    file.write(chm.astype(rasterio.float32))
 ```
 
-The canopy height model gives an indication of the height of trees or buildings. Let's determine the height of individual buildings based on the height raster data. First step is to download building data from the BAG Web Feature Service, that we used yesterday.
+Although we have applied the concepts of a Canopy Height Model, the area we picked does not only contain vegetation on top of the surface, but also buildings. The heights of vegetation and buildings are thus currently combined in our chm raster. 
 
+### Computing heights of buildings
+
+Let us determine the heights of buildings only. First step is to download building data from the BAG Web Feature Service that we used in the vector tutorial.
 
 ```{r, engine = 'Python', eval=FALSE}
 import geopandas as gpd
 from requests import Request
+
+# bounding box (same as in previous script)
+x, y = 174100, 444100
+bbox = (x-500, y-500, x+500, y+500)
+
 # extract only buildings on and around WUR campus
 url = 'https://geodata.nationaalgeoregister.nl/bag/wfs/v1_1'
 layer = 'bag:pand' # see wfs.contents
 bb = ','.join(map(str, bbox)) # string of bbox needed for the request url
+
 # Specify the parameters for fetching the data
 params = dict(service='WFS', version="1.1.0", request='GetFeature',
       typeName=layer, outputFormat='json',
       srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
+
 # Parse the URL with parameters
 q = Request('GET', url, params=params).prepare().url
-# Read data from URL
-BuildingsGDF = gpd.read_file(q)
 
+# Read data from URL
+buildings_gdf = gpd.read_file(q)
 ```
 
-
-Next step is to perform zonal statistics to get the average height value per building vector. Rasterstats is a specific module for this task. It uses GeoDataFrames and .tif files and outputs [GeoJSON](http://geojson.org/), which is a standard geodata structure.
-
+Next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which uses GeoDataFrames and .tif files for this task. It outputs a [GeoJSON](http://geojson.org/).
 
 ```{r, engine = 'Python', eval=FALSE}
 import rasterstats as rs
-CHMbuildings = rs.zonal_stats(BuildingsGDF, "./data/AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
-BuildingsGDF = gpd.GeoDataFrame.from_features(CHMbuildings)
-# check the added columns with a prefix 'CHM_'
-print(BuildingsGDF['CHM_mean'])
+
+# apply the zonal statistics function with gdf and tif as input
+chm_buildings = rs.zonal_stats(buildings_gdf, "./data/AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
+# convert geojson to GeoDataFrame
+buildings_gdf = gpd.GeoDataFrame.from_features(chm_buildings)
+# check the added attributes with a prefix 'CHM_'
+print(buildings_gdf['CHM_mean'])
 ```
 
-
-The GeoJSON can be read by GeoPandas, which makes it easy to access and visualize your data. A quick visualization shows us the heights derived from the raster data on the map.
-
+A quick visualization shows us the heights derived from the raster data on the map:
 
 ```{r, engine = 'Python', eval=FALSE}
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots(1, figsize=(10, 10)) # Create one plot with figure size 10 by 10
-ax.set_title('Buildings on the WUR campus and their heights above ground')
-BuildingsGDF.plot(ax=ax, column='CHM_mean', k=6,
+
+# Create one plot with figure size 10 by 10
+fig, ax = plt.subplots(1, figsize=(10, 10)) 
+
+# Customize figure with title, legend, and facecolor
+ax.set_title('Heights above ground (m) of buildings on the WUR campus')
+buildings_gdf.plot(ax=ax, column='CHM_mean', k=6,
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
-ax.set_facecolor("lightgray") # Set background to grey
-plt.axis('equal') # Set equal axis
-plt.show() # Visualize figure
+ax.set_facecolor("lightgray") 
+
+# Make sure to get an equal scale in the x and y direction, as this is a map
+plt.axis('equal') 
+
+# Visualize figure
+plt.show() 
 ```
 
 <img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%">
 
-## Writing raster data to file
+## Writing raster data to a file
 
-To store the numpy array, Rasterio needs to combine metadata and the raster data. It is possible to use the metadata of the DSM or DTM that you had before, but the metadata can also be created from scratch. The CRS needs to be defined with a function from Rasterio and the transformation needs to be defined with Affine. Affine is a Python module that facilitates [affine transformations](https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image), i.e. scaling, rotating, mirroring or skewing of images/rasters/arrays.
+To store the NumPy array as a raster file, Rasterio needs the accompanying metadata, as you've seen before. It is possible to use the metadata of an existing raster, or to create it from scratch. 
+
+To create metadata from scratch, the CRS can be defined with a function from Rasterio and the transformation with Affine. Affine is a Python module that facilitates [affine transformations](https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image), i.e. scaling, rotating, mirroring or skewing of images/rasters/arrays.
+
+Rasterio can write most [raster formats from GDAL](https://www.gdal.org/formats_list.html). [The developers recommend using GeoTiff driver](https://github.com/mapbox/rasterio/issues/731) for writing as it is the best-tested and best-supported format. 
 
 ```{r, engine = 'Python', eval=FALSE}
 import affine
+
+# specify the components of the crs (we know them from the DSM)
 kwargs = {'driver': 'GTiff',
           'dtype': 'float32',
           'nodata': None,
@@ -246,69 +273,85 @@ kwargs = {'driver': 'GTiff',
           'count': 1,
           'crs': rasterio.crs.CRS({'init': 'epsg:28992'}),
           'transform': affine.Affine(0.5, 0.0, 173600.0, 0.0, -0.5, 444600.0)}
-# kwargs = DSM.meta # Metadata can be copied from existing file if needed
+
+# write the raster file (notice that it is the old chm; chm_buildings is not a raster)
 with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
-    file.write(CHM.astype(rasterio.float32))
-```
-
-Rasterio developers recommend using GTiff as the driver, but rasterio can write most [raster formats from GDAL](https://www.gdal.org/formats_list.html). [The developers recommend using GeoTiff driver](https://github.com/mapbox/rasterio/issues/731) for writing as it is the best-tested and best-supported format. We can open the saved GeoTiff and check if the metadata is the same as we specified when writing data. Opening a file is very straightforward with Rasterio.
-
-```{r, engine = 'Python', eval=FALSE}
-CHM = rasterio.open("./data/AHN2_05m_CHM.tif")
-print(CHM.meta)
+    file.write(chm.astype(rasterio.float32))
 ```
 
 
 ## Visualizing raster data
 
-Raster data can be visualized by passing NumPy arrays to Matplotlib directly or secondly via a method in Rasterio that accesses Matplotlib for you. Visualizing directly with Matplotlib allows more flexibility - such as tweaking of the legend, axis or labels - and is more suitable for professional purposes. The visualization via Rasterio requires less code and can give a quick idea of your raster data. We will show both approaches. Let's make a geographical visualization of the DSM and DTM with Matplotlib.
+Raster data can be visualized by passing NumPy arrays to Matplotlib directly or secondly via a method in Rasterio that accesses Matplotlib for you. Using Matplotlib directly allows more flexibility, such as tweaking the legend, axis and labels, and is more suitable for professional purposes. The visualization via Rasterio requires less code and can give a quick idea of your raster data. We will show both approaches. Let us make a visualization of the DSM and DTM with Matplotlib:
 
 ```{r, engine = 'Python', eval=FALSE}
 import matplotlib.pyplot as plt
+
+# Create one plot with figure size 10 by 10
 fig, ax = plt.subplots(figsize=(10,10))
-dsmplot = ax.imshow(DSM.read(1), cmap='Oranges', extent=bbox)
+
+# Imshow is the main raster plotting method in matplotlib
+# Again, ensure an equal scale in the x and y direction
+dsmplot = ax.imshow(dsm.read(1), cmap='Oranges', extent=bbox, aspect='equal')
+
+# Title (do not do this for a scientific report, use a caption instead)
 ax.set_title("Digital Surface Model - WUR Campus", fontsize=14)
-cbar = fig.colorbar(dsmplot, fraction=0.035, pad=0.01)
+
+# Legend with label
+cbar = fig.colorbar(dsmplot, fraction=0.035, pad=0.01, extend='both')
 cbar.ax.get_yaxis().labelpad = 15
-cbar.ax.set_ylabel('Height (m)', rotation=270)
+cbar.ax.set_ylabel('Height (m)', rotation=90)
+
+# Hide the axes
 ax.set_axis_off()
 plt.show()
 
+# Same procedures for the DTM
 fig, ax = plt.subplots(figsize=(10,10))
-dtmplot = ax.imshow(DTM.read(1), cmap='Oranges', extent=bbox)
+dtmplot = ax.imshow(dtm.read(1), cmap='Oranges', extent=bbox, aspect='equal')
 ax.set_title("Digital Terrain Model - WUR Campus", fontsize=14)
 cbar = fig.colorbar(dtmplot, fraction=0.035, pad=0.01, extend='both')
 cbar.ax.get_yaxis().labelpad = 15
-cbar.ax.set_ylabel('Height (m)', rotation=270)
+cbar.ax.set_ylabel('Height (m)', rotation=90)
 ax.set_axis_off()
 plt.show()
 ```
 
 <img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus" width = "100%">
 
-If you don't like the orange colormap of Matplotlib, it is possible to change to [another colormap](https://Matplotlib.org/examples/color/colormaps_reference.html).
+If you do not like the orange colormap of Matplotlib, it is possible to pick [another colormap](https://Matplotlib.org/examples/color/colormaps_reference.html).
 
-The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined.
+The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (can be done with Matplotlib directly as well).
 
 ```{r, engine = 'Python', eval=FALSE}
 from rasterio.plot import show
+
+# Figure with three subplots, upack directly
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
-show(DSM, ax=axdsm, title='DSM')
-show(DTM, ax=axdtm, title='DTM')
-show(CHM, ax=axchm, title='CHM')
+
+# Populate the three subplots with raster data
+show(dsm, ax=axdsm, title='DSM')
+show(dtm, ax=axdtm, title='DTM')
+show(chm, ax=axchm, title='CHM')
 plt.show()
 ```
 
 <img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
 
-Rasterio visualizes simple histograms by calling functions of Matplotlib.
+Rasterio also visualizes simple histograms by calling functions of Matplotlib.
 
 ```{r, engine = 'Python', eval=FALSE}
 from rasterio.plot import show_hist
+
+# Figure with three subplots, upack directly
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
-show_hist(DSM, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
-show_hist(DTM, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
-show_hist(CHM, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+
+# Populate the three subplots with histograms
+show_hist(dsm, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
+show_hist(dtm, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
+show_hist(chm, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+
+# Build legends and show
 axdsm.legend(['DSM'])
 axdtm.legend(['DTM'])
 axchm.legend(['CHM'])
@@ -319,8 +362,8 @@ plt.show()
 
 ## Extra info
 
+  * [Tutorial working with rasters in Python with Rasterio](https://geohackweek.github.io/raster/04-workingwithrasters/)
+  * [Tutorial working with raster in Python with GDAL (for Python 2)](https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html)
   * [Landsat satellite images](https://earthexplorer.usgs.gov/)
   * [Resampled landsat satellite images](http://espa.cr.usgs.gov/index/)
   * [Sentinel satellite images](https://scihub.copernicus.eu/dhus/#/home)
-  * [Tutorial working with rasters in Python with Rasterio](https://geohackweek.github.io/raster/04-workingwithrasters/)
-  * [Tutorial working with raster in Python with GDAL](https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html)
