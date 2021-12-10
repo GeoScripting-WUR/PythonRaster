@@ -873,7 +873,7 @@
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/5e55a1d9-47c3-4149-9384-26d5147ee2d7_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/></h1>
 <h1 id="week-3-lesson-11-handling-raster-data-with-python">Week 3, Lesson 11: Handling Raster data with Python</h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil</em> - 2021-12-07</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil</em> - 2021-12-10</p>
 <h2 id="introduction">Introduction</h2>
 <p>Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
 <ul>
@@ -920,6 +920,15 @@ cvg = wcs.contents['ahn2_05m_ruw']
 print(cvg.supportedCRS)
 print(cvg.boundingBoxWGS84)
 print(cvg.supportedFormats)</code></pre>
+</div>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 1</strong>: What coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
+</p>
+</blockquote>
+</div>
 </div>
 <p>Let us have a look at the data. We do not want to overload the web service. Therefore, we download once and store the data locally.</p>
 <p>Download the Digital Surface Model [DSM], which is the the ‘ahn2_05m_ruw’ version, and Digital Terrain Model [DTM], which is the ‘ahn2_05m_int’ version, to a local file. The difference between a DEM, DSM and DTM is explained on the <a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS StackExchange</a>.</p>
@@ -972,6 +981,15 @@ print(data)
 # Delete objects to close the file
 ds = None</code></pre>
 </div>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 2</strong>: Why do we set ds to None at the end of your script? What may happen if you do not do that?
+</p>
+</blockquote>
+</div>
+</div>
 <p>The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module.</p>
 <h3 id="from-a-file-with-rasterio">From a file with Rasterio</h3>
 <p><a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a> reads and writes multiple raster formats based on GDAL, provides raster processing functions based on NumPy arrays and GeoJSON, and integrates matplotlib in the module rasterio.plot for visualization. Rasterio handles multiple bands, <a href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>, <a href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>, and <a href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
@@ -996,6 +1014,15 @@ print(dtm.meta)
 show(dsm, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
 <p><img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%"></p>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 3</strong>: Is the colormap ‘gist_ncar’ cartographically a good choice for a digital surface model? Why/Why not? If not, try to find a more fitting one.
+</p>
+</blockquote>
+</div>
+</div>
 <p>The metadata shows the driver (GDAL’s way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values.</p>
 <p>In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when they data are read with the method <code>.read()</code>:</p>
 <div class="row">
@@ -1032,6 +1059,15 @@ kwargs = dsm.meta
 with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(chm.astype(rasterio.float32))</code></pre>
 </div>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 4</strong>: Where is the canopy the highest in the study area? Is that what you expected?
+</p>
+</blockquote>
+</div>
+</div>
 <p>Although we have applied the concepts of a Canopy Height Model, the area we picked does not only contain vegetation on top of the surface, but also buildings. The heights of vegetation and buildings are thus currently combined in our chm raster.</p>
 <h3 id="computing-heights-of-buildings">Computing heights of buildings</h3>
 <p>Let us determine the heights of buildings only. First step is to download building data from the BAG Web Feature Service that we used in the vector tutorial.</p>
@@ -1061,6 +1097,15 @@ q = Request('GET', url, params=params).prepare().url
 
 # Read data from URL
 buildings_gdf = gpd.read_file(q)</code></pre>
+</div>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 5</strong>: What happens in the line “bb = ‘,’.join(map(str, bbox))”? Look up how mapping works if you do not know.
+</p>
+</blockquote>
+</div>
 </div>
 <p>Next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which uses GeoDataFrames and .tif files for this task. It outputs a <a href="http://geojson.org/">GeoJSON</a>.</p>
 <div class="row">
@@ -1092,13 +1137,22 @@ buildings_gdf.plot(ax=ax, column='CHM_mean', k=6,
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") 
 
-# Make sure to get an equal scale in the x and y direction, as this is a map
+# Make sure to get an equal scale in the x and y direction
 plt.axis('equal') 
 
 # Visualize figure
 plt.show() </code></pre>
 </div>
 <p><img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%"></p>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 6</strong>: Why do we want an equal scale in the x and y direction for this figure?
+</p>
+</blockquote>
+</div>
+</div>
 <h2 id="writing-raster-data-to-a-file">Writing raster data to a file</h2>
 <p>To store the NumPy array as a raster file, Rasterio needs the accompanying metadata, as you’ve seen before. It is possible to use the metadata of an existing raster, or to create it from scratch.</p>
 <p>To create metadata from scratch, the CRS can be defined with a function from Rasterio and the transformation with Affine. Affine is a Python module that facilitates <a href="https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image">affine transformations</a>, i.e. scaling, rotating, mirroring or skewing of images/rasters/arrays.</p>
@@ -1201,6 +1255,15 @@ axchm.legend(['CHM'])
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%"></p>
+<div class="row">
+<div class="alert alert-success">
+<blockquote>
+<p>
+<strong>Question 7</strong>: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+</p>
+</blockquote>
+</div>
+</div>
 <h2 id="extra-info">Extra info</h2>
 <ul>
 <li><a href="https://geohackweek.github.io/raster/04-workingwithrasters/">Tutorial working with rasters in Python with Rasterio</a></li>

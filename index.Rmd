@@ -68,6 +68,11 @@ print(cvg.boundingBoxWGS84)
 print(cvg.supportedFormats)
 ```
 
+
+```{block, type="alert alert-success"}
+> **Question 1**: What coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
+```
+
 Let us have a look at the data. We do not want to overload the web service. Therefore, we download once and store the data locally. 
 
 Download the Digital Surface Model [DSM], which is the the 'ahn2_05m_ruw' version, and Digital Terrain Model [DTM], which is the 'ahn2_05m_int' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
@@ -120,6 +125,11 @@ print(data)
 ds = None
 ```
 
+
+```{block, type="alert alert-success"}
+> **Question 2**: Why do we set ds to None at the end of your script? What may happen if you do not do that?
+```
+
 The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module. 
 
 
@@ -148,6 +158,11 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 ```
 
 <img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%">
+
+
+```{block, type="alert alert-success"}
+> **Question 3**: Is the colormap 'gist_ncar' cartographically a good choice for a digital surface model? Why/Why not? If not, try to find a more fitting one.
+```
 
 The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
 
@@ -186,6 +201,12 @@ with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(chm.astype(rasterio.float32))
 ```
 
+
+```{block, type="alert alert-success"}
+> **Question 4**: Where is the canopy the highest in the study area? Is that what you expected?
+```
+
+
 Although we have applied the concepts of a Canopy Height Model, the area we picked does not only contain vegetation on top of the surface, but also buildings. The heights of vegetation and buildings are thus currently combined in our chm raster. 
 
 ### Computing heights of buildings
@@ -217,6 +238,11 @@ q = Request('GET', url, params=params).prepare().url
 buildings_gdf = gpd.read_file(q)
 ```
 
+
+```{block, type="alert alert-success"}
+> **Question 5**: What happens in the line "bb = ','.join(map(str, bbox))"? Look up how mapping works if you do not know.
+```
+
 Next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which uses GeoDataFrames and .tif files for this task. It outputs a [GeoJSON](http://geojson.org/).
 
 ```{r, engine = 'Python', eval=FALSE}
@@ -244,7 +270,7 @@ buildings_gdf.plot(ax=ax, column='CHM_mean', k=6,
                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
 ax.set_facecolor("lightgray") 
 
-# Make sure to get an equal scale in the x and y direction, as this is a map
+# Make sure to get an equal scale in the x and y direction
 plt.axis('equal') 
 
 # Visualize figure
@@ -252,6 +278,12 @@ plt.show()
 ```
 
 <img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%">
+
+
+```{block, type="alert alert-success"}
+> **Question 6**: Why do we want an equal scale in the x and y direction for this figure?
+```
+
 
 ## Writing raster data to a file
 
@@ -359,6 +391,13 @@ plt.show()
 ```
 
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
+
+
+```{block, type="alert alert-success"}
+> **Question 7**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+```
+
+
 
 ## Extra info
 
