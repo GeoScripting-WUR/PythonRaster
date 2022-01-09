@@ -873,7 +873,7 @@
 <div class="contents col-xs-12 col-md-10">
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/></h1>
 <h1 id="week-3-lesson-10-handling-raster-data-with-python">Week 3, Lesson 10: Handling Raster data with Python</h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil</em> - 2021-12-23</p>
+<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil</em> - 2022-01-09</p>
 <h2 id="introduction">Introduction</h2>
 <p>Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
 <ul>
@@ -882,6 +882,13 @@
 <li><a href="https://Rasterio.readthedocs.io/en/latest/">Rasterio</a> reads and writes geospatial raster data</li>
 <li><a href="http://www.numpy.org/">NumPy</a> is fundamental package for scientific computing, such as array (thus raster) calculations</li>
 <li><a href="https://pythonhosted.org/rasterstats/">rasterstats</a> summarizes geospatial raster datasets based on vector geometires</li>
+</ul>
+<h2 id="todays-learning-objectives">Today’s Learning objectives</h2>
+<ul>
+<li>Be able to read spatial raster formats from web services and files</li>
+<li>Be able to write spatial raster formats to disk</li>
+<li>Know how to apply basic operations on raster data, such as arithmetics</li>
+<li>Be able to plot spatial raster data with matplotlib</li>
 </ul>
 <h2 id="setting-up-the-python-environment">Setting up the Python Environment</h2>
 <p>Make a folder structure for this tutorial:</p>
@@ -892,10 +899,8 @@
 <pre style=""><code class="source bash">cd ~/Documents/
 mkdir PythonRaster #or give the directory a name to your liking
 cd ./PythonRaster
-mkdir scripts
 mkdir data
-mkdir output
-spyder</code></pre>
+mkdir output</code></pre>
 </div>
 <p>Next, create a text file, (re)name it (to) <code>raster.yaml</code>, and copy the following content into the file:</p>
 <pre><code>name: raster
@@ -912,7 +917,7 @@ dependencies:
   - geopandas
   - rasterstats
   - affine</code></pre>
-<p>Use this file to create an environment for this tutorial, as you have learned in the refresher lesson. Activate the environment, open Spyder, create a script in the <code>scripts</code> folder and start coding.</p>
+<p>Use this file to create an environment for this tutorial, as you have learned in the refresher lesson. NOTE: This can take a while (5-10 minutes); just go and get a coffee/tea/water/juice. Activate the environment, open Spyder, create a script in the root folder and start coding.</p>
 <h2 id="reading-raster-data-and-accessing-metadata">Reading raster data and accessing metadata</h2>
 <h3 id="via-a-web-coverage-service">Via a Web Coverage Service</h3>
 <p>A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. <a href="https://www.opengeospatial.org/standards/wcs">Web Coverage Services</a> are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A <a href="https://www.opengeospatial.org/standards/wms">Web Map Service</a> [WMS] also exists for rasters; it allows downloading of images but without the data values.</p>
@@ -954,7 +959,7 @@ print(cvg.supportedFormats)</code></pre>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 1</strong>: What coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
+<strong>Question 1</strong>: What is the coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
 </p>
 </blockquote>
 </div>
@@ -971,6 +976,9 @@ print(cvg.supportedFormats)</code></pre>
 x, y = 174100, 444100
 bbox = (x-500, y-500, x+500, y+500)
 
+# Create a data directoty within the directory where this script is run if it does not exist yet and store file
+if not os.path.exists('data'): os.makedirs('data')
+
 # Request the DSM data from the WCS
 response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
@@ -981,15 +989,17 @@ with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
 # Do the same for the DTM
 response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-# Create a data directoty within the directory where this script is run if it does not exist yet and store file
-if not os.path.exists('data'): os.makedirs('data')
-
 with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
     file.write(response.read())</code></pre>
 </div>
 <h3 id="from-a-file-with-gdal">From a file with GDAL</h3>
 <p><a href="https://gdal.org/">GDAL</a> handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.</p>
-<p><img src="./images/gdal.png" alt="gdal structure" width = "90%"></p>
+<figure>
+<img src="./images/gdal.png" alt="gdal structure" width = "90%">
+<figcaption>
+GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.
+</figcaption>
+</figure>
 <p>Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
@@ -1053,7 +1063,7 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
 </div>
 <p>The metadata shows the driver (GDAL’s way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values.</p>
-<p>In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when they data are read with the method <code>.read()</code>:</p>
+<p>In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when the data are read with the method <code>.read()</code>:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
@@ -1150,6 +1160,7 @@ buildings_gdf = gpd.GeoDataFrame.from_features(chm_buildings)
 # check the added attributes with a prefix 'CHM_'
 print(buildings_gdf['CHM_mean'])</code></pre>
 </div>
+<p>You may get a warning message from rasterstats; you can ignore this.</p>
 <p>A quick visualization shows us the heights derived from the raster data on the map:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">

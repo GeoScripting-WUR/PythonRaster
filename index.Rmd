@@ -27,6 +27,13 @@ Today we will work with Python packages for spatial raster analysis. Python has 
 * [NumPy](http://www.numpy.org/) is fundamental package for scientific computing, such as array (thus raster) calculations
 * [rasterstats](https://pythonhosted.org/rasterstats/) summarizes geospatial raster datasets based on vector geometires
 
+## Today’s Learning objectives
+
+- Be able to read spatial raster formats from web services and files
+- Be able to write spatial raster formats to disk
+- Know how to apply basic operations on raster data, such as arithmetics
+- Be able to plot spatial raster data with matplotlib
+
 ## Setting up the Python Environment
 Make a folder structure for this tutorial:
 
@@ -34,10 +41,8 @@ Make a folder structure for this tutorial:
 cd ~/Documents/
 mkdir PythonRaster #or give the directory a name to your liking
 cd ./PythonRaster
-mkdir scripts
 mkdir data
 mkdir output
-spyder
 ```
 
 Next, create a text file, (re)name it (to) `raster.yaml`, and copy the following content into the file:
@@ -58,7 +63,7 @@ dependencies:
   - affine
 ```
 
-Use this file to create an environment for this tutorial, as you have learned in the refresher lesson. Activate the environment, open Spyder, create a script in the `scripts` folder and start coding.
+Use this file to create an environment for this tutorial, as you have learned in the refresher lesson. NOTE: This can take a while (5-10 minutes); just go and get a coffee/tea/water/juice. Activate the environment, open Spyder, create a script in the root folder and start coding.
 
 
 ## Reading raster data and accessing metadata
@@ -102,7 +107,7 @@ print(cvg.supportedFormats)
 
 
 ```{block, type="alert alert-success"}
-> **Question 1**: What coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
+> **Question 1**: What is the coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
 ```
 
 Let us have a look at the data. We do not want to overload the web service. Therefore, we download once and store the data locally. 
@@ -116,6 +121,9 @@ import os
 x, y = 174100, 444100
 bbox = (x-500, y-500, x+500, y+500)
 
+# Create a data directoty within the directory where this script is run if it does not exist yet and store file
+if not os.path.exists('data'): os.makedirs('data')
+
 # Request the DSM data from the WCS
 response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
@@ -126,9 +134,6 @@ with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
 # Do the same for the DTM
 response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-# Create a data directoty within the directory where this script is run if it does not exist yet and store file
-if not os.path.exists('data'): os.makedirs('data')
-
 with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
     file.write(response.read())
 ```
@@ -136,7 +141,10 @@ with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
 ### From a file with GDAL
 [GDAL](https://gdal.org/) handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
 
+<figure>
 <img src="./images/gdal.png" alt="gdal structure" width = "90%">
+<figcaption>GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.</figcaption>
+</figure>
 
 Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
 
@@ -198,7 +206,7 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 
 The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
 
-In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when they data are read with the method `.read()`:
+In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when the data are read with the method `.read()`:
 
 ```{r, engine = 'Python', eval=FALSE}
 
@@ -287,6 +295,8 @@ buildings_gdf = gpd.GeoDataFrame.from_features(chm_buildings)
 # check the added attributes with a prefix 'CHM_'
 print(buildings_gdf['CHM_mean'])
 ```
+
+You may get a warning message from rasterstats; you can ignore this.
 
 A quick visualization shows us the heights derived from the raster data on the map:
 
