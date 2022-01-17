@@ -45,11 +45,9 @@ mkdir data
 mkdir output
 ```
 
-Next, create a text file, (re)name it (to) `raster.yaml`, and copy the following content into the file:
+Like in the previous lesson, we will create a conda environment with one `.yaml` file, and then update it with a second `.yaml` file. Use the following content for the two files:
 ```
 name: raster
-channels:
-  - conda-forge
 dependencies:
   - python
   - numpy
@@ -57,13 +55,20 @@ dependencies:
   - spyder
   - owslib
   - gdal
-  - rasterio
   - geopandas
+```
+
+```
+name: raster
+channels:
+  - conda-forge
+dependencies:
+  - rasterio
   - rasterstats
   - affine
 ```
 
-Use this file to create an environment for this tutorial, as you have learned in the refresher lesson. NOTE: This can take a while (5-10 minutes); just go and get a coffee/tea/water/juice. Activate the environment, open Spyder, create a script in the root folder and start coding.
+Use these two files to create an environment for this tutorial. NOTE: The second one can take a while (5-10 minutes); just go and get a coffee/tea/water/juice. Finally, activate the environment, open Spyder, create a script in the root folder and start coding.
 
 
 ## Reading raster data and accessing metadata
