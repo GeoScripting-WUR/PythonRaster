@@ -1251,7 +1251,7 @@ Rasterio and plot it with <code>rasterio.plot</code>:</p>
 </button>
 <pre style=""><code class="source python">import rasterio
 from rasterio.plot import show
-from matplotlib.pyplot import figure
+import matplotlib.pyplot as plt
 
 # Open the two rasters 
 dsm = rasterio.open("data/AHN3_05m_DSM.tif", driver="GTiff")
@@ -1262,7 +1262,7 @@ print(dsm.meta)
 print(dtm.meta)
 
 # Plot with rasterio.plot, which provides Matplotlib functionality
-figure(figsize=(5, 5), dpi=300)  # adjust size and resolution
+plt.figure(figsize=(5, 5), dpi=300)  # adjust size and resolution
 show(dsm, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
 <p><img src="./images/dsm_campus.png" alt="Water pixels of the Netherlands" width = "60%"></p>
@@ -1314,7 +1314,7 @@ topography.</p>
 dsm_data = dsm.read()
 dtm_data = dtm.read()
 
-# Properly set our nodata to np.nan (this will be useful later)
+# Set our nodata to np.nan (this is important for later)
 dsm_data[dsm_data == dsm.nodata] = np.nan
 dtm_data[dtm_data == dtm.nodata] = np.nan</code></pre>
 </div>
