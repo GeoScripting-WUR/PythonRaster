@@ -1232,15 +1232,10 @@ module.</p>
 href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a>
 reads and writes multiple raster formats based on GDAL, provides raster
 processing functions based on NumPy arrays and GeoJSON, and integrates
-Matplotlib in the module <code>rasterio.plot</code> for visualization.
-Rasterio handles multiple bands, <a
-href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>,
-<a
-href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>,
-and <a
-href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
+Matplotlib in the module <code>rasterio.plot</code> for
+visualization.</p>
 <p>The rest of the tutorial below is a complete route of handling a
-rasterdataset. We will use the DEMs from a the WCS for our study area,
+raster dataset. We will use the DEMs from a the WCS for our study area,
 handle it with Rasterio, calculate new information (CHM), overlay it
 with vector data representing buildings and visualize it.</p>
 <p>Let us read in the raster data we just stored from the WCS with
@@ -1458,6 +1453,16 @@ y direction for this figure?
 </blockquote>
 </div>
 </div>
+<h2 id="other-functionality">Other functionality</h2>
+<p>Note that this tutorial only scratches the surface of the
+possibilities of Rasterio. It can do most if not all things you did in
+<code>R</code> in the Vector - Raster tutorial. Rasterio for example
+also allows you to do <a
+href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>,
+<a
+href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>,
+and <a
+href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
 <h1 id="more-on-writing-raster-data-to-a-file">More on writing raster
 data to a file</h1>
 <p>As you’ve seen before, to store the NumPy array as a raster file,

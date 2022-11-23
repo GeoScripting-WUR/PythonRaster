@@ -175,9 +175,9 @@ The GDAL Python API is not the best documented Python module. Therefore, Rasteri
 
 ## From a file with Rasterio
 
-[Rasterio](https://Rasterio.readthedocs.io/en/latest/intro.html) reads and writes multiple raster formats based on GDAL, provides raster processing functions based on NumPy arrays and GeoJSON, and integrates Matplotlib in the module `rasterio.plot` for visualization. Rasterio handles multiple bands, [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html), and [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html).
+[Rasterio](https://Rasterio.readthedocs.io/en/latest/intro.html) reads and writes multiple raster formats based on GDAL, provides raster processing functions based on NumPy arrays and GeoJSON, and integrates Matplotlib in the module `rasterio.plot` for visualization.
 
-The rest of the tutorial below is a complete route of handling a rasterdataset. We will use the DEMs from a the WCS for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it.
+The rest of the tutorial below is a complete route of handling a raster dataset. We will use the DEMs from a the WCS for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it.
 
 Let us read in the raster data we just stored from the WCS with Rasterio and plot it with `rasterio.plot`:
 
@@ -342,6 +342,9 @@ plt.show()
 ```{block, type="alert alert-success"}
 > **Question 5**: Why do we want an equal scale in the x and y direction for this figure?
 ```
+
+## Other functionality
+Note that this tutorial only scratches the surface of the possibilities of Rasterio. It can do most if not all things you did in `R` in the Vector - Raster tutorial. Rasterio for example also allows you to do [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html), and [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html).
 
 # More on writing raster data to a file
 As you've seen before, to store the NumPy array as a raster file, Rasterio needs the accompanying metadata. It is possible to use the metadata of an existing raster (which we did before), but it is also possible to create it from scratch. 
