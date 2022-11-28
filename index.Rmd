@@ -40,7 +40,7 @@ Today we will work with Python packages for spatial raster analysis. Python has 
 
 ## Setting up the Python Environment
 
-Make a folder structure for this tutorial:
+Make a directory structure for this tutorial:
 
 ```{r, eval=FALSE,engine='bash'}
 cd ~/Documents/
@@ -68,7 +68,7 @@ dependencies:
   - osmnx
 ```
 
-After creation, activate the environment, open Spyder, create a script in the root folder, and start coding.
+After creation, activate the environment, open Spyder, create a script in the root directory, and start coding.
 
 # Reading raster data and accessing metadata
 
@@ -126,7 +126,7 @@ bbox = (x - 500, y - 500, x + 500, y + 500)
 response = wcs.getCoverage(identifier='ahn3_05m_dsm', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-# Write the data to a local file in the 'data' folder
+# Write the data to a local file in the 'data' directory
 with open('data/AHN3_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 

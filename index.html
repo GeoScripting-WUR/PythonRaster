@@ -1057,7 +1057,7 @@ arithmetics</li>
 </ul>
 <h2 id="setting-up-the-python-environment">Setting up the Python
 Environment</h2>
-<p>Make a folder structure for this tutorial:</p>
+<p>Make a directory structure for this tutorial:</p>
 <div class="row">
 <button class="source bash toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> bash source
@@ -1084,7 +1084,7 @@ dependencies:
   - affine
   - osmnx</code></pre>
 <p>After creation, activate the environment, open Spyder, create a
-script in the root folder, and start coding.</p>
+script in the root directory, and start coding.</p>
 <h1 id="reading-raster-data-and-accessing-metadata">Reading raster data
 and accessing metadata</h1>
 <h2 id="from-a-web-coverage-service">From a Web Coverage Service</h2>
@@ -1166,7 +1166,7 @@ bbox = (x - 500, y - 500, x + 500, y + 500)
 response = wcs.getCoverage(identifier='ahn3_05m_dsm', bbox=bbox, format='GEOTIFF_FLOAT32',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-# Write the data to a local file in the 'data' folder
+# Write the data to a local file in the 'data' directory
 with open('data/AHN3_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
