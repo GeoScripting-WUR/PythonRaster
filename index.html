@@ -1396,7 +1396,9 @@ buildings_gdf = gpd.read_file(q)</code></pre>
 <blockquote>
 <p>
 <strong>Question 4</strong>: What happens in the line “bb =
-‘,’.join(map(str, bbox))”? Look up how mapping works if you do not know.
+‘,’.join(map(str, bbox))”? Look up how <code>map()</code> <a
+href="https://www.geeksforgeeks.org/python-map-function/">works in
+Python</a> if you do not know.
 </p>
 </blockquote>
 </div>
@@ -1404,7 +1406,7 @@ buildings_gdf = gpd.read_file(q)</code></pre>
 <p>The next step is to perform zonal statistics to get the average
 height value per building polygon. We will do this with the module
 Rasterstats, which can use a <code>GeoDataFrame</code> and a
-<code>.tif</code> file for this task. It outputs a <a
+<code>.tif</code> file for this task. Here, we make it output a <a
 href="http://geojson.org/">GeoJSON</a>.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
@@ -1430,7 +1432,7 @@ data on the map:</p>
 <pre style=""><code class="source python"># Create one plot with figure size 10 by 10
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-# Customize figure with title, legend, and facecolor
+# Customize figure with title, legend, and facecolour
 ax.set_title('Heights above ground (m) of buildings on the WUR campus')
 buildings_gdf.plot(ax=ax, column='CHM_mean', k=6,
                    cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
@@ -1524,7 +1526,7 @@ dsmplot = ax.imshow(dsm_data[0], cmap='Oranges', extent=bbox, aspect='equal')
 # Title (do not do this for a scientific report, use a caption instead)
 ax.set_title("Digital Surface Model - WUR Campus", fontsize=14)
 
-# Add a legend (colorbar) with label
+# Add a legend (colourbar) with label
 cbar = fig.colorbar(dsmplot, fraction=0.035, pad=0.01)
 cbar.ax.get_yaxis().labelpad = 15
 cbar.ax.set_ylabel('Height (m)', rotation=90)
@@ -1534,10 +1536,10 @@ ax.set_axis_off()
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus" width = "100%"></p>
-<p>If you do not like the orange colormap of Matplotlib, it is also
+<p>If you do not like the orange colourmap of Matplotlib, it is also
 possible to pick <a
 href="https://Matplotlib.org/examples/color/colormaps_reference.html">another
-colormap</a>.</p>
+colourmap</a>.</p>
 <p>The second approach with Rasterio only requires one line of code to
 make a plot. By creating subplots, the figures can be combined (this can
 be done with Matplotlib directly as well).</p>
@@ -1563,7 +1565,7 @@ Matplotlib.</p>
 </button>
 <pre style=""><code class="source python">from rasterio.plot import show_hist
 
-# Figure with three subplots, upack directly
+# Figure with three subplots, unpack directly
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
 
 # Populate the three subplots with histograms
