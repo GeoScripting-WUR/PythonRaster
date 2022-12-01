@@ -5,33 +5,181 @@
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil" />
-  <title>Week 3, Lesson 10: Python for raster processing | geoscripting</title>
+  <title>Tutorial 10: Raster data handling with Python</title>
   <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-  
+
   <!-- bootstrap -->
   <!--<link href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet"  id="style">-->
   <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-  
+
   <!-- highlight.js -->
   <!--<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/styles/default.min.css" rel="stylesheet" id="code-style">-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
   <script>
   hljs.LANGUAGES.r=function(a){var b="([a-zA-Z]|\\.[a-zA-Z.])[a-zA-Z0-9._]*";return{c:[a.HCM,{b:b,l:b,k:{keyword:"function if in break next repeat else for return switch while try tryCatch|10 stop warning require library attach detach source setMethod setGeneric setGroupGeneric setClass ...|10",literal:"NULL NA TRUE FALSE T F Inf NaN NA_integer_|10 NA_real_|10 NA_character_|10 NA_complex_|10"},r:0},{cN:"number",b:"0[xX][0-9a-fA-F]+[Li]?\\b",r:0},{cN:"number",b:"\\d+(?:[eE][+\\-]?\\d*)?L\\b",r:0},{cN:"number",b:"\\d+\\.(?!\\d)(?:i\\b)?",r:0},{cN:"number",b:"\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",r:0},{b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[a.BE],r:0},{cN:"string",b:"'",e:"'",c:[a.BE],r:0}]}}(hljs); </script>
   <!--<script type="text/javascript", src="https://yandex.st/highlightjs/7.3/languages/r.min.js"></script>-->
-  
+
   <!-- Manific Popup -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/0.8.9/jquery.magnific-popup.min.js"></script>
-  
+
   <script type="text/javascript"
     src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
   </script>
@@ -39,16 +187,16 @@
   // Function to generate the dynamic table of contents
   jQuery.fn.generate_TOC = function () {
     var base = $(this[0]);
-  
+
     var selectors = ['h1', 'h2', 'h3', 'h4'];
-  
+
     var last_ptr = [{}, {}, {}, {}];
-  
+
     var anchors = {};
-  
+
     generate_anchor = function (text) {
       var test = text.replace(/\W/g, '_');
-  
+
       while(test in anchors){
         //if no suffix, add one
         if(test.match(/_\d+$/) === null){
@@ -62,13 +210,13 @@
       anchors[test]=1;
       return(test);
     }
-  
+
     $(selectors.join(',')).filter(function(index) { return $(this).parent().attr("id") != 'header'; }).each(function () {
-  
+
       var heading = $(this);
       var idx = selectors.indexOf(heading.prop('tagName').toLowerCase());
       var itr = 0;
-  
+
       while (itr <= idx) {
         if (jQuery.isEmptyObject(last_ptr[itr])) {
           last_ptr[itr] = $('<ul>').addClass('nav');
@@ -90,10 +238,10 @@
       var a = $('<a>')
       .text(heading.text())
       .attr('href', '#' + anchor);
-  
+
     var li = $('<li>')
       .append(a);
-  
+
     last_ptr[idx].append(li);
     for (i = idx + 1; i < last_ptr.length; i++) {
       last_ptr[i] = {};
@@ -103,35 +251,35 @@
   /* run scripts when document is ready */
   $(function() {
     "use strict";
-  
+
     var $window = $(window);
     var $body = $(document.body);
-  
+
     /* size of thumbnails */
-  
+
     var hidden_types = ['source']
     var output_types = ['output', 'message', 'warning', 'error']
-  
+
     /* style tables */
     $('table').addClass('table table-striped table-bordered table-hover table-condensed');
-  
+
     $('pre code').each(function(i, e) {
       hljs.highlightBlock(e);
     });
-  
+
     /* Magnific Popup */
     $(".thumbnail").each(function(){
       $(this).magnificPopup({
         disableOn: 768,
         closeOnContentClick: true,
-  
+
         type: 'image',
         items: {
           src: $(this).find('img').attr('src'),
         }
       });
     });
-  
+
     function toggle_block(obj, show) {
       var span = obj.find('span');
       if(show === true){
@@ -143,7 +291,7 @@
         obj.next('pre').slideUp();
       }
     }
-  
+
     function toggle_thumbnails(imgs, show){
       if(show === true){
         imgs.parents().show()
@@ -153,7 +301,7 @@
         imgs.slideUp(400, function(){ $(this).parent().hide(); });
       }
     }
-  
+
     function global_toggle(obj){
       var type = obj.attr('type');
       var show = !obj.parent('li').hasClass('active');
@@ -170,14 +318,14 @@
         $('.toggle.' + type).each(function() { toggle_block($(this), show); });
       }
     }
-  
+
     /* onclick toggle next code block */
     $('.toggle').click(function() {
       var span = $(this).find('span');
       toggle_block($(this), !span.hasClass('glyphicon-chevron-down'));
       return false
     })
-  
+
     // global toggles
     $('.toggle-global').click(function(){
       var type = $(this).attr('type');
@@ -203,18 +351,18 @@
       $('body > #wrap > .container > .row').append('<div class="col-md-2"><div id="toc" class="well sidebar sidenav affix hidden-print"/></div>');
       $('#toc').generate_TOC();
     }
-  
+
     $.each(hidden_types, function(i, type) {
       $('li[type=' + type + ']').each(function(){ global_toggle($(this)); });
     });
-  
+
     /* remove paragraphs with no content */
     $('p:empty').remove();
-  
+
     $body.scrollspy({
       target: '.sidebar',
     });
-  
+
     /* theme switch */
     $('.theme-switch').click(function(){
       var css = $('link[title=' + $(this).attr('title') + ']');
@@ -231,14 +379,14 @@
       $(this).closest('li').addClass('active');
       return false;
     });
-  
+
     //TODO refresh on show/hide
     $window.on('load', function () {
       $body.scrollspy('refresh');
     })
-  
+
   });
-  
+
   </script>
   <style>
   /* Knitr_bootstrap styles */
@@ -253,11 +401,11 @@
   .toggle{
     text-transform: capitalize;
   }
-  
+
   .toggle-global{
     text-transform: capitalize;
   }
-  
+
   /* Sticky footer styles */
   * {
     margin:0;
@@ -269,7 +417,7 @@
       /* The html and body elements cannot have any padding or margin. */
       /*overflow-x: hidden;*/
   }
-  
+
   /* Wrapper for page content to push down footer */
   #wrap {
       min-height: 100%;
@@ -278,43 +426,43 @@
       /* Negative indent footer by it's height */
       margin: 0 auto -120px;
   }
-  
+
   /* Set the fixed height of the footer here */
   #push,
   #footer {
       height: 120px;
   }
-  
+
   #footer {
     text-align: center;
   }
-  
+
   /* Top level subheader elements.  These are the first nested items underneath a header element. */
   .header li {
     font-size: 20px;
   }
-  
+
   /* Makes the font smaller for all subheader elements. */
   .sub-header li {
       font-size: 12px;
   }
-  
+
   button.thumbnails {
     margin-left:0px;
   }
-  
+
   /*
    * Side navigation
    *
    * Scrollspy and affixed enhanced navigation to highlight sections and secondary
    * sections of docs content.
    */
-  
+
   /* By default it's not affixed in mobile views, so undo that */
   .sidebar.affix {
     position: static;
   }
-  
+
   /* First level of nav */
   .sidenav {
     margin-top: 30px;
@@ -323,7 +471,7 @@
     padding-bottom: 10px;
     border-radius: 5px;
   }
-  
+
   /* All levels of nav */
   .sidebar .nav > li > a {
     display: block;
@@ -341,7 +489,7 @@
     background-color: transparent;
     border-right: 1px solid;
   }
-  
+
   /* Nav: second level (shown on .active) */
   .sidebar .nav .nav {
     display: none; /* Hide by default, but at >768px, show it */
@@ -353,14 +501,14 @@
     padding-left: 30px;
     font-size: 90%;
   }
-  
+
   .sidebar .nav .nav .nav > li > a {
     padding-left: 40px;
   }
   .sidebar .nav .nav .nav .nav > li > a {
     padding-left: 50px;
   }
-  
+
   /* Show and affix the side nav when space allows it */
   @media screen and (min-width: 992px) {
     .sidebar .nav > .active > ul {
@@ -392,14 +540,14 @@
       width: 263px;
     }
   }
-  
+
   #toc {
     padding: 10px 0px;
     margin:0;
     border:0;
   }
-  
-  
+
+
   .panel pre {
     margin: 0;
     padding: 0;
@@ -424,7 +572,7 @@
     background: #0b0b0b;
     opacity: 0.8;
     filter: alpha(opacity=80); }
-  
+
   .mfp-wrap {
     top: 0;
     left: 0;
@@ -434,7 +582,7 @@
     position: fixed;
     outline: none !important;
     -webkit-backface-visibility: hidden; }
-  
+
   .mfp-container {
     text-align: center;
     position: absolute;
@@ -446,16 +594,16 @@
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-  
+
   .mfp-container:before {
     content: '';
     display: inline-block;
     height: 100%;
     vertical-align: middle; }
-  
+
   .mfp-align-top .mfp-container:before {
     display: none; }
-  
+
   .mfp-content {
     position: relative;
     display: inline-block;
@@ -463,30 +611,30 @@
     margin: 0 auto;
     text-align: left;
     z-index: 1045; }
-  
+
   .mfp-inline-holder .mfp-content,
   .mfp-ajax-holder .mfp-content {
     width: 100%;
     cursor: auto; }
-  
+
   .mfp-ajax-cur {
     cursor: progress; }
-  
+
   .mfp-zoom-out-cur,
   .mfp-zoom-out-cur .mfp-image-holder .mfp-close {
     cursor: -moz-zoom-out;
     cursor: -webkit-zoom-out;
     cursor: zoom-out; }
-  
+
   .mfp-zoom {
     cursor: pointer;
     cursor: -webkit-zoom-in;
     cursor: -moz-zoom-in;
     cursor: zoom-in; }
-  
+
   .mfp-auto-cursor .mfp-content {
     cursor: auto; }
-  
+
   .mfp-close,
   .mfp-arrow,
   .mfp-preloader,
@@ -494,13 +642,13 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none; }
-  
+
   .mfp-loading.mfp-figure {
     display: none; }
-  
+
   .mfp-hide {
     display: none !important; }
-  
+
   .mfp-preloader {
     color: #cccccc;
     position: absolute;
@@ -511,19 +659,19 @@
     left: 8px;
     right: 8px;
     z-index: 1044; }
-  
+
   .mfp-preloader a {
     color: #cccccc; }
-  
+
   .mfp-preloader a:hover {
     color: white; }
-  
+
   .mfp-s-ready .mfp-preloader {
     display: none; }
-  
+
   .mfp-s-error .mfp-content {
     display: none; }
-  
+
   button.mfp-close,
   button.mfp-arrow {
     overflow: visible;
@@ -536,11 +684,11 @@
     z-index: 1046;
     -webkit-box-shadow: none;
     box-shadow: none; }
-  
+
   button::-moz-focus-inner {
     padding: 0;
     border: 0; }
-  
+
   .mfp-close {
     width: 44px;
     height: 44px;
@@ -560,10 +708,10 @@
       opacity: 1; }
     .mfp-close:active {
       top: 1px; }
-  
+
   .mfp-close-btn-in .mfp-close {
     color: #333333; }
-  
+
   .mfp-image-holder .mfp-close,
   .mfp-iframe-holder .mfp-close {
     color: white;
@@ -571,7 +719,7 @@
     text-align: right;
     padding-right: 6px;
     width: 100%; }
-  
+
   .mfp-counter {
     position: absolute;
     top: 0;
@@ -579,7 +727,7 @@
     color: #cccccc;
     font-size: 12px;
     line-height: 18px; }
-  
+
   .mfp-arrow {
     position: absolute;
     opacity: 0.65;
@@ -590,14 +738,14 @@
     width: 90px;
     height: 110px;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
-  
+
   .mfp-arrow:active {
     margin-top: -54px; }
-  
+
   .mfp-arrow:hover,
   .mfp-arrow:focus {
     opacity: 1; }
-  
+
   .mfp-arrow:before, .mfp-arrow:after,
   .mfp-arrow .mfp-b,
   .mfp-arrow .mfp-a {
@@ -620,7 +768,7 @@
   .mfp-arrow .mfp-b {
     border-top-width: 21px;
     border-bottom-width: 21px; }
-  
+
   .mfp-arrow-left {
     left: 0; }
     .mfp-arrow-left:after,
@@ -631,7 +779,7 @@
     .mfp-arrow-left .mfp-b {
       margin-left: 25px;
       border-right: 27px solid #3f3f3f; }
-  
+
   .mfp-arrow-right {
     right: 0; }
     .mfp-arrow-right:after,
@@ -641,22 +789,22 @@
     .mfp-arrow-right:before,
     .mfp-arrow-right .mfp-b {
       border-left: 27px solid #3f3f3f; }
-  
+
   .mfp-iframe-holder {
     padding-top: 40px;
     padding-bottom: 40px; }
-  
+
   .mfp-iframe-holder .mfp-content {
     line-height: 0;
     width: 100%;
     max-width: 900px; }
-  
+
   .mfp-iframe-scaler {
     width: 100%;
     height: 0;
     overflow: hidden;
     padding-top: 56.25%; }
-  
+
   .mfp-iframe-scaler iframe {
     position: absolute;
     display: block;
@@ -666,10 +814,10 @@
     height: 100%;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
     background: black; }
-  
+
   .mfp-iframe-holder .mfp-close {
     top: -40px; }
-  
+
   /* Main image in popup */
   img.mfp-img {
     width: auto;
@@ -682,7 +830,7 @@
     box-sizing: border-box;
     padding: 40px 0 40px;
     margin: 0 auto; }
-  
+
   /* The shadow behind the image */
   .mfp-figure:after {
     content: '';
@@ -697,10 +845,10 @@
     z-index: -1;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
     background: #444444; }
-  
+
   .mfp-figure {
     line-height: 0; }
-  
+
   .mfp-bottom-bar {
     margin-top: -36px;
     position: absolute;
@@ -708,26 +856,26 @@
     left: 0;
     width: 100%;
     cursor: auto; }
-  
+
   .mfp-title {
     text-align: left;
     line-height: 18px;
     color: #f3f3f3;
     word-wrap: break-word;
     padding-right: 36px; }
-  
+
   .mfp-figure small {
     color: #bdbdbd;
     display: block;
     font-size: 12px;
     line-height: 14px; }
-  
+
   .mfp-image-holder .mfp-content {
     max-width: 100%; }
-  
+
   .mfp-gallery .mfp-image-holder .mfp-figure {
     cursor: pointer; }
-  
+
   @media screen and (max-width: 800px) and (orientation: landscape), screen and (max-height: 300px) {
     /**
      * Remove all paddings around the image on small screen
@@ -735,15 +883,15 @@
     .mfp-img-mobile .mfp-image-holder {
       padding-left: 0;
       padding-right: 0; }
-  
+
     .mfp-img-mobile img.mfp-img {
       padding: 0; }
-  
+
     /* The shadow behind the image */
     .mfp-img-mobile .mfp-figure:after {
       top: 0;
       bottom: 0; }
-  
+
     .mfp-img-mobile .mfp-bottom-bar {
       background: rgba(0, 0, 0, 0.6);
       bottom: 0;
@@ -754,14 +902,14 @@
       -webkit-box-sizing: border-box;
       -moz-box-sizing: border-box;
       box-sizing: border-box; }
-  
+
     .mfp-img-mobile .mfp-bottom-bar:empty {
       padding: 0; }
-  
+
     .mfp-img-mobile .mfp-counter {
       right: 5px;
       top: 3px; }
-  
+
     .mfp-img-mobile .mfp-close {
       top: 0;
       right: 0;
@@ -772,7 +920,7 @@
       position: fixed;
       text-align: center;
       padding: 0; }
-  
+
     .mfp-img-mobile .mfp-figure small {
       display: inline;
       margin-left: 5px; } }
@@ -780,15 +928,15 @@
     .mfp-arrow {
       -webkit-transform: scale(0.75);
       transform: scale(0.75); }
-  
+
     .mfp-arrow-left {
       -webkit-transform-origin: 0;
       transform-origin: 0; }
-  
+
     .mfp-arrow-right {
       -webkit-transform-origin: 100%;
       transform-origin: 100%; }
-  
+
     .mfp-container {
       padding-left: 6px;
       padding-right: 6px; } }
@@ -808,7 +956,7 @@
     top: 0;
     right: 0;
     padding-top: 0; }
-  
+
   //Magnific overrides
   .mfp-image img{
     background: white;
@@ -816,12 +964,12 @@
   .mfp-figure:after {
     background: white;
   }
-  
+
   /*
    * Off Canvas navbar toggle right
    * --------------------------------------------------
    */
-  
+
   @media screen and (max-width: 768px) {
     .row-offcanvas .collapsing {
     -webkit-transition: none 0;
@@ -867,31 +1015,49 @@
   </style>
 </head>
 <body>
+<title>
+Tutorial 10: Raster data handling with Python
+</title>
 <div id="wrap">
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
-<h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/></h1>
-<h1 id="week-3-lesson-10-handling-raster-data-with-python">Week 3, Lesson 10: Handling Raster data with Python</h1>
-<p><em>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliūnas, David Swinkels, Judith Verstegen, Corné Vreugdenhil</em> - 2022-01-17</p>
+<style type="text/css">
+body {max-width: none;}
+a:visited {color: #91170a;}
+</style>
+<h1 id="wur-geoscripting"><a
+href="https://geoscripting-wur.github.io/">WUR Geoscripting</a>
+<img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/></h1>
+<h1 id="week-3-tutorial-10-raster-data-handling-with-python">Week 3,
+Tutorial 10: Raster data handling with Python</h1>
 <h2 id="introduction">Introduction</h2>
-<p>Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
+<p>Today we will work with Python packages for spatial raster analysis.
+Python has some dedicated packages to handle rasters:</p>
 <ul>
-<li><a href="https://geopython.github.io/OWSLib/">OWSLib</a> to download geospatial raster data from Web Coverage Services</li>
-<li><a href="https://gdal.org/api/python.html">GDAL</a> is powerful library for reading, writing and warping raster datasets</li>
-<li><a href="https://Rasterio.readthedocs.io/en/latest/">Rasterio</a> reads and writes geospatial raster data</li>
-<li><a href="http://www.numpy.org/">NumPy</a> is fundamental package for scientific computing, such as array (thus raster) calculations</li>
-<li><a href="https://pythonhosted.org/rasterstats/">rasterstats</a> summarizes geospatial raster datasets based on vector geometires</li>
+<li><a href="https://geopython.github.io/OWSLib/">OWSLib</a> allows us
+to download geospatial raster data from Web Coverage Services</li>
+<li><a href="https://gdal.org/api/python_bindings.html">GDAL</a> is
+powerful library for reading, writing and warping raster datasets</li>
+<li><a href="https://Rasterio.readthedocs.io/en/latest/">Rasterio</a>
+reads and writes geospatial raster data</li>
+<li><a href="https://pythonhosted.org/rasterstats/">rasterstats</a>
+summarizes geospatial raster datasets based on vector geometries</li>
+<li><a href="http://www.numpy.org/">NumPy</a> is fundamental package for
+scientific computing, such as array (thus raster) calculations</li>
 </ul>
-<h2 id="todays-learning-objectives">Today’s Learning objectives</h2>
+<h2 id="learning-objectives">Learning objectives</h2>
 <ul>
-<li>Be able to read spatial raster formats from web services and files</li>
+<li>Be able to read spatial raster formats from web services and
+files</li>
 <li>Be able to write spatial raster formats to disk</li>
-<li>Know how to apply basic operations on raster data, such as arithmetics</li>
-<li>Be able to plot spatial raster data with matplotlib</li>
+<li>Know how to apply basic operations on raster data, such as
+arithmetics</li>
+<li>Be able to plot spatial raster data with Matplotlib</li>
 </ul>
-<h2 id="setting-up-the-python-environment">Setting up the Python Environment</h2>
-<p>Make a folder structure for this tutorial:</p>
+<h2 id="setting-up-the-python-environment">Setting up the Python
+Environment</h2>
+<p>Make a directory structure for this tutorial:</p>
 <div class="row">
 <button class="source bash toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> bash source
@@ -902,7 +1068,8 @@ cd ./PythonRaster
 mkdir data
 mkdir output</code></pre>
 </div>
-<p>Like in the previous lesson, we will create a conda environment with one <code>.yaml</code> file, and then update it with a second <code>.yaml</code> file. Use the following content for the two files:</p>
+<p>Like in the previous tutorials, we will create a conda environment
+with a <code>.yaml</code> file:</p>
 <pre><code>name: raster
 dependencies:
   - python
@@ -911,32 +1078,47 @@ dependencies:
   - spyder
   - owslib
   - gdal
-  - geopandas</code></pre>
-<pre><code>name: raster
-channels:
-  - conda-forge
-dependencies:
+  - geopandas
   - rasterio
   - rasterstats
-  - affine</code></pre>
-<p>Use these two files to create an environment for this tutorial. NOTE: The second one can take a while (5-10 minutes); just go and get a coffee/tea/water/juice. Finally, activate the environment, open Spyder, create a script in the root folder and start coding.</p>
-<h2 id="reading-raster-data-and-accessing-metadata">Reading raster data and accessing metadata</h2>
-<h3 id="via-a-web-coverage-service">Via a Web Coverage Service</h3>
-<p>A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. <a href="https://www.opengeospatial.org/standards/wcs">Web Coverage Services</a> are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A <a href="https://www.opengeospatial.org/standards/wms">Web Map Service</a> [WMS] also exists for rasters; it allows downloading of images but without the data values.</p>
-<p>Today we will work with elevation rasters. Have a look at the WCS of the AHN dataset. AHN stands for “Actueel Hoogtebestand Nederland” and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents.</p>
+  - affine
+  - osmnx</code></pre>
+<p>After creation, activate the environment, open Spyder, create a
+script in the root directory, and start coding.</p>
+<h1 id="reading-raster-data-and-accessing-metadata">Reading raster data
+and accessing metadata</h1>
+<h2 id="from-a-web-coverage-service">From a Web Coverage Service</h2>
+<p>A Web Coverage Service (WCS) loads raster data in a similar way as
+Web Feature Services (WFS) load vector data. <a
+href="https://www.ogc.org/standards/wcs">Web Coverage Services</a> are a
+standard by the Open Geospatial Consortium and allow the downloading of
+geospatial raster data with multiple types of format encoding: GeoTIFF,
+netCDF, JPEG2000 etc. A <a href="https://www.ogc.org/standards/wms">Web
+Map Service</a> [WMS] also exists for rasters; it allows downloading of
+images but without the data values.</p>
+<p>Today we will work with elevation rasters. More specifically, we will
+have a look at the WCS of the AHN dataset. AHN stands for “Actueel
+Hoogtebestand Nederland” and is a Digital Elevation Model [DEM] that
+covers the Netherlands. Access the web coverage service to have a look
+at the contents:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">from owslib.wcs import WebCoverageService
 
-# Access the WCS by proving the url and optional arguments (here version)
-wcs = WebCoverageService('http://geodata.nationaalgeoregister.nl/ahn2/wcs?service=WCS', version='1.0.0')
+# Access the WCS by proving the url and optional arguments
+wcs = WebCoverageService('http://geodata.nationaalgeoregister.nl/ahn3/wcs?service=WCS', version='1.0.0')
+
 # Print to check the contents of the WCS
 print(list(wcs.contents))</code></pre>
 </div>
-<p>Running the last line of code shows that the Web Coverage Service of the AHN2 contains four rasters: 0.5m interpolated, 0.5m not interpolated, 0.5m rough, and 5m. The meters identify the cell size. Raster data of AHN has the projected coordinate system RD_New (EPSG: 28992).</p>
-<p>We can also check what types of operations are available in the WCS:</p>
+<p>Running the last line of code shows that the Web Coverage Service of
+the AHN3 contains four rasters: 0.5m DSM, 0.5m DTM, 5m DSM, and 5m DTM.
+Raster data of AHN has the projected coordinate system
+<code>RD_New (EPSG: 28992)</code>.</p>
+<p>We can also check what types of operations are available for this
+WCS:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
@@ -944,65 +1126,75 @@ print(list(wcs.contents))</code></pre>
 <pre style=""><code class="source python"># Get all operations and print the name of each of them
 print([op.name for op in wcs.operations])</code></pre>
 </div>
-<p>You will see that the Web Coverage Service allows accessing the data (GetCoverage), the metadata (DescribeCoverage), and the capabilities (GetCapabilities). These are all standard protocols defined by the OGC.</p>
-<p>Several functions are available to access specific metadata of each individual raster, for example:</p>
+<p>You will see that the Web Coverage Service allows accessing the data
+(GetCoverage), the metadata (DescribeCoverage), and the capabilities
+(GetCapabilities). These are all standard protocols defined by the
+OGC.</p>
+<p>Several functions are available to access specific metadata of each
+individual raster, for example:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python"># Take the 0.5m-resolution rough raster as example
-cvg = wcs.contents['ahn2_05m_ruw']
-# print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats
+<pre style=""><code class="source python"># Take the 0.5m DSM as an example
+cvg = wcs.contents['ahn3_05m_dsm']
+
+# Print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats
 print(cvg.supportedCRS)
 print(cvg.boundingBoxWGS84)
 print(cvg.supportedFormats)</code></pre>
 </div>
-<div class="row">
-<div class="alert alert-success">
-<blockquote>
-<p>
-<strong>Question 1</strong>: What is the coordinate reference system of the 0.5m rough raster? Is it the same for the other three rasters?
-</p>
-</blockquote>
-</div>
-</div>
-<p>Let us have a look at the data. We do not want to overload the web service. Therefore, we download once and store the data locally.</p>
-<p>Download the Digital Surface Model [DSM], which is the the ‘ahn2_05m_ruw’ version, and Digital Terrain Model [DTM], which is the ‘ahn2_05m_int’ version, to a local file. The difference between a DEM, DSM and DTM is explained on the <a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS StackExchange</a>.</p>
+<p>Let us have a look at the data itself. As we do not want to overload
+the web service, we download once and store the data locally.</p>
+<p>Download the Digital Surface Model [DSM], which is the the
+‘ahn3_05m_dsm’ version, and Digital Terrain Model [DTM], which is the
+‘ahn3_05m_dtm’ version, to a local file. The difference between a DEM,
+DSM and DTM is explained on the <a
+href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS
+StackExchange</a>.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import os
 
-# Define a bounding box in the availble crs (see before) by picking a point and drawing a 1x1 km box around it
+# Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it
 x, y = 174100, 444100
-bbox = (x-500, y-500, x+500, y+500)
-
-# Create a data directoty within the directory where this script is run if it does not exist yet and store file
-if not os.path.exists('data'): os.makedirs('data')
+bbox = (x - 500, y - 500, x + 500, y + 500)
 
 # Request the DSM data from the WCS
-response = wcs.getCoverage(identifier='ahn2_05m_ruw', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+response = wcs.getCoverage(identifier='ahn3_05m_dsm', bbox=bbox, format='GEOTIFF_FLOAT32',
+                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-# Write the data to a local file in the 'data' folder (it should exist)
-with open('./data/AHN2_05m_DSM.tif', 'wb') as file:
+# Write the data to a local file in the 'data' directory
+with open('data/AHN3_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
 # Do the same for the DTM
-response = wcs.getCoverage(identifier='ahn2_05m_int', bbox=bbox, format='GEOTIFF_FLOAT32', crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
+response = wcs.getCoverage(identifier='ahn3_05m_dtm', bbox=bbox, format='GEOTIFF_FLOAT32',
+                           crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
-with open('./data/AHN2_05m_DTM.tif', 'wb') as file:
+with open('data/AHN3_05m_DTM.tif', 'wb') as file:
     file.write(response.read())</code></pre>
 </div>
-<h3 id="from-a-file-with-gdal">From a file with GDAL</h3>
-<p><a href="https://gdal.org/">GDAL</a> handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.</p>
+<p>Before continuing, please check if this step was successful.</p>
+<h2 id="from-a-file-with-gdal">From a file with GDAL</h2>
+<p><a href="https://gdal.org/">GDAL</a> handles raster and vector
+geospatial data formats with Python, Java, R and C APIs. When opening a
+raster file in gdal, the object has a hierarchical structure starting at
+the Dataset level. A Dataset has a Geotransform (metadata) and can
+contain one or more Bands. Each Band has a Data array and potentially
+Overviews.</p>
 <figure>
 <img src="./images/gdal.png" alt="gdal structure" width = "90%">
 <figcaption>
-GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.
+GDAL class structure, adapted from Garrard, 2016, Geoprocessing with
+Python.
 </figcaption>
 </figure>
-<p>Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.</p>
+<p>Let us open the file we just saved. You will see you first get the
+dataset, and need to access the band (even though there is only one),
+before the data array can be accessed.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
@@ -1010,11 +1202,11 @@ GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.
 <pre style=""><code class="source python">from osgeo import gdal
 
 # Open dataset, gdal automatically selects the correct driver
-ds = gdal.Open("./data/AHN2_05m_DTM.tif" )
+ds = gdal.Open("data/AHN3_05m_DSM.tif" )
 
 # Get the band (band number 1)
 band = ds.GetRasterBand(1)
-        
+
 # Get the data array
 data = band.ReadAsArray()
 print(data)
@@ -1026,92 +1218,156 @@ ds = None</code></pre>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 2</strong>: Why do we set ds to None at the end of your script? What may happen if you do not do that?
+<strong>Question 1</strong>: Why do we set ds to None at the end of your
+script? What may happen if you do not do that?
 </p>
 </blockquote>
 </div>
 </div>
-<p>The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module.</p>
-<h3 id="from-a-file-with-rasterio">From a file with Rasterio</h3>
-<p><a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a> reads and writes multiple raster formats based on GDAL, provides raster processing functions based on NumPy arrays and GeoJSON, and integrates matplotlib in the module rasterio.plot for visualization. Rasterio handles multiple bands, <a href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>, <a href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>, and <a href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
-<p>The rest of the lesson below is a complete route of handling a rasterdataset. We will use the DEMs from a the WCS for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it.</p>
-<p>Let us read in the raster data we just stored from the WCS with rasterio and plot it with rasterio.plot:</p>
+<p>The GDAL Python API is not the best documented Python module.
+Therefore, Rasterio is explained as an alternative raster data handling
+module.</p>
+<h2 id="from-a-file-with-rasterio">From a file with Rasterio</h2>
+<p><a
+href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio</a>
+reads and writes multiple raster formats based on GDAL, provides raster
+processing functions based on NumPy arrays and GeoJSON, and integrates
+Matplotlib in the module <code>rasterio.plot</code> for
+visualization.</p>
+<p>The rest of the tutorial below is a complete route of handling a
+raster dataset. We will use the DEMs from a the WCS for our study area,
+handle it with Rasterio, calculate new information (CHM), overlay it
+with vector data representing buildings and visualize it.</p>
+<p>Let us read in the raster data we just stored from the WCS with
+Rasterio and plot it with <code>rasterio.plot</code>:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import rasterio
 from rasterio.plot import show
+import matplotlib.pyplot as plt
 
-# open the two rasters 
-dsm = rasterio.open("./data/AHN2_05m_DSM.tif", driver="GTiff")
-dtm = rasterio.open("./data/AHN2_05m_DTM.tif", driver="GTiff")
+# Open the two rasters 
+dsm = rasterio.open("data/AHN3_05m_DSM.tif", driver="GTiff")
+dtm = rasterio.open("data/AHN3_05m_DTM.tif", driver="GTiff")
 
-# metadata functions from rasterio
+# Metadata functions from Rasterio
 print(dsm.meta)
 print(dtm.meta)
 
-# plot with rasterio.plot, which provides matplotlib functionality
+# Plot with rasterio.plot, which provides Matplotlib functionality
+plt.figure(figsize=(5, 5), dpi=300)  # adjust size and resolution
 show(dsm, title='Digital Surface Model', cmap='gist_ncar')</code></pre>
 </div>
-<p><img src="./images/DSMpje.png" alt="Water pixels of the Netherlands" width = "60%"></p>
+<p><img src="./images/dsm_campus.png" alt="Water pixels of the Netherlands" width = "60%"></p>
 <div class="row">
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 3</strong>: Is the colormap ‘gist_ncar’ cartographically a good choice for a digital surface model? Why/Why not? If not, try to find a more fitting one.
+<strong>Question 2</strong>: Adjust the code above to take a look at the
+DTM. Note the gaps that appear. What are these gaps?
 </p>
 </blockquote>
 </div>
 </div>
-<p>The metadata shows the driver (GDAL’s way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values.</p>
-<p>In the back-end, raster layers in rasterio are stored as NumPy arrays, which appears when the data are read with the method <code>.read()</code>:</p>
+<p>The metadata shows the driver (GDAL’s way of knowing how to function
+with a specific file format), datatype, nodata value, width of raster in
+number of cells, height of raster in number of cells, number of raster
+bands in the dataset, coordinate reference system, and transformation
+values.</p>
+<p>In the back-end, raster layers in Rasterio are stored as NumPy
+arrays, which appear when the data are read with the method
+<code>.read()</code>:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python">
-# rasterio object
+<pre style=""><code class="source python"># Rasterio object
 print(type(dsm))
 
-# read, show object type and data
+# Read, show object type and data
 dsm_data = dsm.read(1)
 print(type(dsm_data))
 print(dsm_data)</code></pre>
 </div>
-<h2 id="processing-raster-data">Processing raster data</h2>
-<h3 id="computing-a-canopy-height-model">Computing a Canopy Height Model</h3>
-<p>A Canopy Height Model (CHM) gives an indication of the height of trees. It can be created by subtracting a Digital Terrain Model from a Digital Surface Model. In the resulting raster, each cell value represents the tree overstory height above the underlying surface topography. Rasterio relies on NumPy to perform raster point operations.</p>
+<h1 id="processing-raster-data">Processing raster data</h1>
+<h2 id="creating-a-canopy-height-model">Creating a Canopy Height
+Model</h2>
+<p>A Canopy Height Model (CHM) gives an indication of the height of
+trees and/or buildings. It can be created by subtracting a Digital
+Terrain Model from a Digital Surface Model. In the resulting raster,
+each cell value represents the height above the underlying surface
+topography.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python"># access the data from the two rasters
+<pre style=""><code class="source python">import numpy as np
+
+# Access the data from the two rasters
 dsm_data = dsm.read()
 dtm_data = dtm.read()
-# subtract the NumPy arrays 
+
+# Set our nodata to np.nan (this is important for later)
+dsm_data[dsm_data == dsm.nodata] = np.nan
+dtm_data[dtm_data == dtm.nodata] = np.nan</code></pre>
+</div>
+<p>Earlier, we noticed that the DTM included gaps. Let’s first fill
+these gaps using the <code>fillnodata()</code> function from
+<code>rasterio.fill</code>. For more information, see the <a
+href="https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html">documentation</a>.</p>
+<div class="row">
+<button class="source Python toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> Python source
+</button>
+<pre style=""><code class="source python">from rasterio.fill import fillnodata
+
+# Create a mask to specify which pixels to fill (0=fill, 1=do not fill)
+dtm_mask = dtm_data.copy()
+dtm_mask[~np.isnan(dtm_data)] = 1
+dtm_mask[np.isnan(dtm_data)] = 0
+
+# Fill missing values
+dtm_data = fillnodata(dtm_data, mask=dtm_mask)</code></pre>
+</div>
+<p>Now, let’s can create our CHM:</p>
+<div class="row">
+<button class="source Python toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> Python source
+</button>
+<pre style=""><code class="source python"># Subtract the NumPy arrays 
 chm = dsm_data - dtm_data
-# check the resulting array
+
+# Check the resulting array
 print(chm)
 
 # Copy metadata of one of the rasters (does not matter which one)
 kwargs = dsm.meta 
-# save the chm as a raster
-with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+
+# Save the chm as a raster
+with rasterio.open('data/AHN3_05m_CHM.tif', 'w', **kwargs) as file:
     file.write(chm.astype(rasterio.float32))</code></pre>
 </div>
 <div class="row">
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 4</strong>: Where is the canopy the highest in the study area? Is that what you expected?
+<strong>Question 3</strong>: Where is the CHM the highest in the study
+area? Is it what you expected?
 </p>
 </blockquote>
 </div>
 </div>
-<p>Although we have applied the concepts of a Canopy Height Model, the area we picked does not only contain vegetation on top of the surface, but also buildings. The heights of vegetation and buildings are thus currently combined in our chm raster.</p>
-<h3 id="computing-heights-of-buildings">Computing heights of buildings</h3>
-<p>Let us determine the heights of buildings only. First step is to download building data from the BAG Web Feature Service that we used in the vector tutorial.</p>
+<p>We have now applied the basic concepts of creating a Canopy Height
+Model!</p>
+<h2 id="computing-heights-of-buildings">Computing heights of
+buildings</h2>
+<p>Using our CHM, let’s determine the average heights of the buildings
+in our study area. The first step is to download building data from the
+BAG Web Feature Service that we also used in the vector tutorial. Note
+that we make use of the <code>bbox</code> from an earlier codeblock for
+this.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
@@ -1119,19 +1375,15 @@ with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
 <pre style=""><code class="source python">import geopandas as gpd
 from requests import Request
 
-# bounding box (same as in previous script)
-x, y = 174100, 444100
-bbox = (x-500, y-500, x+500, y+500)
-
-# extract only buildings on and around WUR campus
-url = 'https://geodata.nationaalgeoregister.nl/bag/wfs/v1_1'
-layer = 'bag:pand' # see wfs.contents
-bb = ','.join(map(str, bbox)) # string of bbox needed for the request url
+# Extract only buildings on and around WUR campus
+url = 'https://service.pdok.nl/lv/bag/wfs/v2_0'
+layer = 'bag:pand'  # see wfs.contents
+bb = ','.join(map(str, bbox))  # string of bbox needed for the request url
 
 # Specify the parameters for fetching the data
 params = dict(service='WFS', version="1.1.0", request='GetFeature',
-      typeName=layer, outputFormat='json',
-      srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
+              typeName=layer, outputFormat='json',
+              srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
 
 # Parse the URL with parameters
 q = Request('GET', url, params=params).prepare().url
@@ -1143,156 +1395,187 @@ buildings_gdf = gpd.read_file(q)</code></pre>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 5</strong>: What happens in the line “bb = ‘,’.join(map(str, bbox))”? Look up how mapping works if you do not know.
+<strong>Question 4</strong>: What happens in the line “bb =
+‘,’.join(map(str, bbox))”? Look up how <code>map()</code> <a
+href="https://www.geeksforgeeks.org/python-map-function/">works in
+Python</a> if you do not know.
 </p>
 </blockquote>
 </div>
 </div>
-<p>Next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which uses GeoDataFrames and .tif files for this task. It outputs a <a href="http://geojson.org/">GeoJSON</a>.</p>
+<p>The next step is to perform zonal statistics to get the average
+height value per building polygon. We will do this with the module
+Rasterstats, which can use a <code>GeoDataFrame</code> and a
+<code>.tif</code> file for this task. Here, we make it output a <a
+href="http://geojson.org/">GeoJSON</a>.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import rasterstats as rs
 
-# apply the zonal statistics function with gdf and tif as input
-chm_buildings = rs.zonal_stats(buildings_gdf, "./data/AHN2_05m_CHM.tif", prefix='CHM_', geojson_out=True)
-# convert geojson to GeoDataFrame
+# Apply the zonal statistics function with gdf and tif as input
+chm_buildings = rs.zonal_stats(buildings_gdf, "data/AHN3_05m_CHM.tif", prefix='CHM_', geojson_out=True)
+
+# Convert GeoJSON to GeoDataFrame
 buildings_gdf = gpd.GeoDataFrame.from_features(chm_buildings)
-# check the added attributes with a prefix 'CHM_'
+
+# Check the added attributes with a prefix 'CHM_'
 print(buildings_gdf['CHM_mean'])</code></pre>
 </div>
-<p>You may get a warning message from rasterstats; you can ignore this.</p>
-<p>A quick visualization shows us the heights derived from the raster data on the map:</p>
+<p>A quick visualization shows us the heights derived from the raster
+data on the map:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python">import matplotlib.pyplot as plt
+<pre style=""><code class="source python"># Create one plot with figure size 10 by 10
+fig, ax = plt.subplots(1, figsize=(10, 10))
 
-# Create one plot with figure size 10 by 10
-fig, ax = plt.subplots(1, figsize=(10, 10)) 
-
-# Customize figure with title, legend, and facecolor
+# Customize figure with title, legend, and facecolour
 ax.set_title('Heights above ground (m) of buildings on the WUR campus')
 buildings_gdf.plot(ax=ax, column='CHM_mean', k=6,
-                  cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
-ax.set_facecolor("lightgray") 
+                   cmap=plt.cm.viridis, linewidth=1, edgecolor='black', legend=True)
+ax.set_facecolor("lightgray")
 
 # Make sure to get an equal scale in the x and y direction
-plt.axis('equal') 
+plt.axis('equal')
 
 # Visualize figure
-plt.show() </code></pre>
+plt.show()</code></pre>
 </div>
 <p><img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%"></p>
 <div class="row">
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 6</strong>: Why do we want an equal scale in the x and y direction for this figure?
+<strong>Question 5</strong>: Why do we want an equal scale in the x and
+y direction for this figure?
 </p>
 </blockquote>
 </div>
 </div>
-<h2 id="writing-raster-data-to-a-file">Writing raster data to a file</h2>
-<p>To store the NumPy array as a raster file, Rasterio needs the accompanying metadata, as you’ve seen before. It is possible to use the metadata of an existing raster, or to create it from scratch.</p>
-<p>To create metadata from scratch, the CRS can be defined with a function from Rasterio and the transformation with Affine. Affine is a Python module that facilitates <a href="https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image">affine transformations</a>, i.e. scaling, rotating, mirroring or skewing of images/rasters/arrays.</p>
-<p>Rasterio can write most <a href="https://www.gdal.org/formats_list.html">raster formats from GDAL</a>. <a href="https://github.com/mapbox/rasterio/issues/731">The developers recommend using GeoTiff driver</a> for writing as it is the best-tested and best-supported format.</p>
+<h2 id="other-functionality">Other functionality</h2>
+<p>Note that this tutorial only scratches the surface of the
+possibilities of Rasterio. It can do most if not all things you did in
+<code>R</code> in the Vector - Raster tutorial. Rasterio for example
+also allows you to do <a
+href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>,
+<a
+href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>,
+and <a
+href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
+<h1 id="more-on-writing-raster-data-to-a-file">More on writing raster
+data to a file</h1>
+<p>As you’ve seen before, to store the NumPy array as a raster file,
+Rasterio needs the accompanying metadata. It is possible to use the
+metadata of an existing raster (which we did before), but it is also
+possible to create it from scratch.</p>
+<p>To create metadata from scratch, the CRS can be defined with a
+function from Rasterio and the transformation can be defined using
+Affine. Affine is a Python module that facilitates <a
+href="https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image">affine
+transformations</a>, i.e. scaling, rotating, mirroring or skewing of
+images/rasters/arrays.</p>
+<p>Rasterio can write most <a
+href="https://www.gdal.org/formats_list.html">raster formats from
+GDAL</a>. <a href="https://github.com/mapbox/rasterio/issues/731">The
+developers recommend using GeoTiff driver</a> for writing as it is the
+best-tested and best-supported format.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">import affine
 
-# specify the components of the crs (we know them from the DSM)
+# Specify the components of the crs (we know them from the DSM)
 kwargs = {'driver': 'GTiff',
           'dtype': 'float32',
-          'nodata': None,
+          'nodata': np.nan,
           'width': 2000,
           'height': 2000,
           'count': 1,
           'crs': rasterio.crs.CRS({'init': 'epsg:28992'}),
           'transform': affine.Affine(0.5, 0.0, 173600.0, 0.0, -0.5, 444600.0)}
 
-# write the raster file (notice that it is the old chm; chm_buildings is not a raster)
-with rasterio.open('./data/AHN2_05m_CHM.tif', 'w', **kwargs) as file:
+# Write the raster file
+with rasterio.open('data/AHN3_05m_CHM_affine.tif', 'w', **kwargs) as file:
     file.write(chm.astype(rasterio.float32))</code></pre>
 </div>
-<h2 id="visualizing-raster-data">Visualizing raster data</h2>
-<p>Raster data can be visualized by passing NumPy arrays to Matplotlib directly or secondly via a method in Rasterio that accesses Matplotlib for you. Using Matplotlib directly allows more flexibility, such as tweaking the legend, axis and labels, and is more suitable for professional purposes. The visualization via Rasterio requires less code and can give a quick idea of your raster data. We will show both approaches. Let us make a visualization of the DSM and DTM with Matplotlib:</p>
+<h1 id="more-on-raster-data-visualization">More on raster data
+visualization</h1>
+<p>Raster data can be visualized by passing NumPy arrays to Matplotlib
+directly or by making use of a method in Rasterio that accesses
+Matplotlib for you. Using Matplotlib directly allows more flexibility,
+such as tweaking the legend, axis and labels, and is more suitable for
+professional purposes. The visualization using Rasterio requires less
+code and can give a quick idea of your raster data. We show both
+approaches below. Let’s first make a visualization of the DSM using
+Matplotlib:</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python">import matplotlib.pyplot as plt
+<pre style=""><code class="source python"># Create one plot with figure size 10 by 10
+fig, ax = plt.subplots(figsize=(10, 10), dpi=200)
 
-# Create one plot with figure size 10 by 10
-fig, ax = plt.subplots(figsize=(10,10))
-
-# Imshow is the main raster plotting method in matplotlib
+# imshow() is the main raster plotting method in Matplotlib
 # Again, ensure an equal scale in the x and y direction
-dsmplot = ax.imshow(dsm.read(1), cmap='Oranges', extent=bbox, aspect='equal')
+dsmplot = ax.imshow(dsm_data[0], cmap='Oranges', extent=bbox, aspect='equal')
 
 # Title (do not do this for a scientific report, use a caption instead)
 ax.set_title("Digital Surface Model - WUR Campus", fontsize=14)
 
-# Legend with label
-cbar = fig.colorbar(dsmplot, fraction=0.035, pad=0.01, extend='both')
+# Add a legend (colourbar) with label
+cbar = fig.colorbar(dsmplot, fraction=0.035, pad=0.01)
 cbar.ax.get_yaxis().labelpad = 15
 cbar.ax.set_ylabel('Height (m)', rotation=90)
 
 # Hide the axes
 ax.set_axis_off()
-plt.show()
-
-# Same procedures for the DTM
-fig, ax = plt.subplots(figsize=(10,10))
-dtmplot = ax.imshow(dtm.read(1), cmap='Oranges', extent=bbox, aspect='equal')
-ax.set_title("Digital Terrain Model - WUR Campus", fontsize=14)
-cbar = fig.colorbar(dtmplot, fraction=0.035, pad=0.01, extend='both')
-cbar.ax.get_yaxis().labelpad = 15
-cbar.ax.set_ylabel('Height (m)', rotation=90)
-ax.set_axis_off()
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMgood.png" alt="Digital Surface Model of WUR Campus" width = "100%"></p>
-<p>If you do not like the orange colormap of Matplotlib, it is possible to pick <a href="https://Matplotlib.org/examples/color/colormaps_reference.html">another colormap</a>.</p>
-<p>The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (can be done with Matplotlib directly as well).</p>
+<p>If you do not like the orange colourmap of Matplotlib, it is also
+possible to pick <a
+href="https://Matplotlib.org/examples/color/colormaps_reference.html">another
+colourmap</a>.</p>
+<p>The second approach with Rasterio only requires one line of code to
+make a plot. By creating subplots, the figures can be combined (this can
+be done with Matplotlib directly as well).</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
-<pre style=""><code class="source python">from rasterio.plot import show
-
-# Figure with three subplots, upack directly
-fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
+<pre style=""><code class="source python"># Figure with three subplots, unpack directly
+fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
 
 # Populate the three subplots with raster data
-show(dsm, ax=axdsm, title='DSM')
-show(dtm, ax=axdtm, title='DTM')
+show(dsm_data, ax=axdsm, title='DSM')
+show(dtm_data, ax=axdtm, title='Filled DTM')
 show(chm, ax=axchm, title='CHM')
 plt.show()</code></pre>
 </div>
 <p><img src="./images/DSMDTMCHMImage.png" alt="Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%"></p>
-<p>Rasterio also visualizes simple histograms by calling functions of Matplotlib.</p>
+<p>Rasterio can also create simple histograms by calling functions of
+Matplotlib.</p>
 <div class="row">
 <button class="source Python toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> Python source
 </button>
 <pre style=""><code class="source python">from rasterio.plot import show_hist
 
-# Figure with three subplots, upack directly
-fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(21, 7))
+# Figure with three subplots, unpack directly
+fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
 
 # Populate the three subplots with histograms
-show_hist(dsm, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
-show_hist(dtm, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DTM")
+show_hist(dsm_data, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
+show_hist(dtm_data, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram filled DTM")
 show_hist(chm, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
 
 # Build legends and show
 axdsm.legend(['DSM'])
-axdtm.legend(['DTM'])
+axdtm.legend(['Filled DTM'])
 axchm.legend(['CHM'])
 plt.show()</code></pre>
 </div>
@@ -1301,18 +1584,28 @@ plt.show()</code></pre>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 7</strong>: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+<strong>Question 6</strong>: What is represented on the x and y axis?
+The default axis labels are DN (x) and Frequency (y); if you were to
+change them, what labels would you pick to better reflect the content of
+the plots?
 </p>
 </blockquote>
 </div>
 </div>
-<h2 id="extra-info">Extra info</h2>
+<h1 id="more-info">More info</h1>
 <ul>
-<li><a href="https://geohackweek.github.io/raster/04-workingwithrasters/">Tutorial working with rasters in Python with Rasterio</a></li>
-<li><a href="https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html">Tutorial working with raster in Python with GDAL (for Python 2)</a></li>
-<li><a href="https://earthexplorer.usgs.gov/">Landsat satellite images</a></li>
-<li><a href="http://espa.cr.usgs.gov/index/">Resampled landsat satellite images</a></li>
-<li><a href="https://scihub.copernicus.eu/dhus/#/home">Sentinel satellite images</a>
+<li><a
+href="https://geohackweek.github.io/raster/04-workingwithrasters/">Tutorial
+working with rasters in Python with Rasterio</a></li>
+<li><a
+href="https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html">Tutorial
+working with raster in Python with GDAL (for Python 2)</a></li>
+<li><a href="https://earthexplorer.usgs.gov/">Landsat satellite
+images</a></li>
+<li><a href="http://espa.cr.usgs.gov/index/">Resampled landsat satellite
+images</a></li>
+<li><a href="https://scihub.copernicus.eu/dhus/#/home">Sentinel
+satellite images</a>
 </div>
 </div>
 </div>
@@ -1322,7 +1615,8 @@ plt.show()</code></pre>
 <div id="footer">
 <div class="container">
 <p class="text-muted" id="credit">
-Styled with <a href="https://github.com/jimhester/knitrBootstrap">knitrBootstrap</a>
+Styled with
+<a href="https://github.com/jimhester/knitrBootstrap">knitrBootstrap</a>
 </p>
 </div>
 </div>
