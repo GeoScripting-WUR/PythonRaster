@@ -7,7 +7,7 @@
 
         <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil" />
     
-        <meta name="date" content="2023-08-27" />
+        <meta name="date" content="2023-10-01" />
     
     <title>Raster data handling with Python</title>
 
@@ -906,7 +906,7 @@ margin-left: 0 !important;
          <h4 class="author"><em>Jan Verbesselt, Jorge Mendes de Jesus,
 Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen,
 Corné Vreugdenhil</em></h4>
-            <h4 class="date"><em>2023-08-27</em></h4>
+            <h4 class="date"><em>2023-10-01</em></h4>
       
       
    
@@ -1023,13 +1023,13 @@ at the contents:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="im">from</span> owslib.wcs <span class="im">import</span> WebCoverageService</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># Access the WCS by proving the url and optional arguments</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>wcs <span class="op">=</span> WebCoverageService(<span class="st">&#39;http://geodata.nationaalgeoregister.nl/ahn3/wcs?service=WCS&#39;</span>, version<span class="op">=</span><span class="st">&#39;1.0.0&#39;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>wcs <span class="op">=</span> WebCoverageService(<span class="st">&#39;https://service.pdok.nl/rws/ahn/wcs/v1_0?SERVICE=WCS&amp;request=GetCapabilities&#39;</span>, version<span class="op">=</span><span class="st">&#39;1.0.0&#39;</span>)</span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
 <span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># Print to check the contents of the WCS</span></span>
 <span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(wcs.contents))</span></code></pre></div>
 <p>Running the last line of code shows that the Web Coverage Service of
-the AHN3 contains four rasters: 0.5m DSM, 0.5m DTM, 5m DSM, and 5m DTM.
-Raster data of AHN has the projected coordinate system
+the AHN3 contains two rasters: 0.5m DSM, and 0.5m DTM. Raster data of
+AHN has the projected coordinate system
 <code>RD_New (EPSG: 28992)</code>.</p>
 <p>We can also check what types of operations are available for this
 WCS:</p>
@@ -1042,7 +1042,7 @@ OGC.</p>
 <p>Several functions are available to access specific metadata of each
 individual raster, for example:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Take the 0.5m DSM as an example</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>cvg <span class="op">=</span> wcs.contents[<span class="st">&#39;ahn3_05m_dsm&#39;</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>cvg <span class="op">=</span> wcs.contents[<span class="st">&#39;dsm_05m&#39;</span>]</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="bu">print</span>(cvg.supportedCRS)</span>
@@ -1050,10 +1050,10 @@ individual raster, for example:</p>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="bu">print</span>(cvg.supportedFormats)</span></code></pre></div>
 <p>Let us have a look at the data itself. As we do not want to overload
 the web service, we download once and store the data locally.</p>
-<p>Download the Digital Surface Model [DSM], which is the the
-‘ahn3_05m_dsm’ version, and Digital Terrain Model [DTM], which is the
-‘ahn3_05m_dtm’ version, to a local file. The difference between a DEM,
-DSM and DTM is explained on the <a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS
+<p>Download the Digital Surface Model [DSM], which is the the ‘dsm_05m’
+version, and Digital Terrain Model [DTM], which is the ‘dtm_05m’
+version, to a local file. The difference between a DEM, DSM and DTM is
+explained on the <a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS
 StackExchange</a>.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
@@ -1062,7 +1062,7 @@ StackExchange</a>.</p>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>bbox <span class="op">=</span> (x <span class="op">-</span> <span class="dv">500</span>, y <span class="op">-</span> <span class="dv">500</span>, x <span class="op">+</span> <span class="dv">500</span>, y <span class="op">+</span> <span class="dv">500</span>)</span>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># Request the DSM data from the WCS</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">&#39;ahn3_05m_dsm&#39;</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">&#39;GEOTIFF_FLOAT32&#39;</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">&#39;dsm_05m&#39;</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">&#39;GEOTIFF&#39;</span>,</span>
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>                           crs<span class="op">=</span><span class="st">&#39;urn:ogc:def:crs:EPSG::28992&#39;</span>, resx<span class="op">=</span><span class="fl">0.5</span>, resy<span class="op">=</span><span class="fl">0.5</span>)</span>
 <span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co"># Write the data to a local file in the &#39;data&#39; directory</span></span>
@@ -1070,7 +1070,7 @@ StackExchange</a>.</p>
 <span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>    <span class="bu">file</span>.write(response.read())</span>
 <span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a></span>
 <span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co"># Do the same for the DTM</span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">&#39;ahn3_05m_dtm&#39;</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">&#39;GEOTIFF_FLOAT32&#39;</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">&#39;dtm_05m&#39;</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">&#39;GEOTIFF&#39;</span>,</span>
 <span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>                           crs<span class="op">=</span><span class="st">&#39;urn:ogc:def:crs:EPSG::28992&#39;</span>, resx<span class="op">=</span><span class="fl">0.5</span>, resy<span class="op">=</span><span class="fl">0.5</span>)</span>
 <span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a></span>
 <span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;data/AHN3_05m_DTM.tif&#39;</span>, <span class="st">&#39;wb&#39;</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
@@ -1119,6 +1119,16 @@ script? What may happen if you do not do that?
 </p>
 </blockquote>
 </div>
+<details>
+<summary>
+<strong>Click for answer</strong>
+</summary>
+Keeping files open may leave you vulnerable to losing data, (Geo)Pandas
+manage resources under the hood so you don’t explicitly need to close
+files, but for the case of GDAL, and as you will later see, Rasterio,
+it’s important to close your files or open them with a context manager
+<code>with open ...</code>
+</details>
 <p>The GDAL Python API is not the best documented Python module.
 Therefore, Rasterio is explained as an alternative raster data handling
 module.</p>
@@ -1160,6 +1170,12 @@ DTM. Note the gaps that appear. What are these gaps?
 </p>
 </blockquote>
 </div>
+<details>
+<summary>
+<strong>Click for answer</strong>
+</summary>
+These are buildings.
+</details>
 <p>The metadata shows the driver (GDAL’s way of knowing how to function
 with a specific file format), datatype, nodata value, width of raster in
 number of cells, height of raster in number of cells, number of raster
@@ -1228,6 +1244,12 @@ area? Is it what you expected?
 </p>
 </blockquote>
 </div>
+<details>
+<summary>
+<strong>Click for answer</strong>
+</summary>
+Think about where you have the most forests on campus.
+</details>
 <p>We have now applied the basic concepts of creating a Canopy Height
 Model!</p>
 </div>
@@ -1239,32 +1261,33 @@ BAG Web Feature Service that we also used in the vector tutorial. Note
 that we make use of the <code>bbox</code> from an earlier codeblock for
 this.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="im">from</span> requests <span class="im">import</span> Request</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># Extract only buildings on and around WUR campus</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>url <span class="op">=</span> <span class="st">&#39;https://service.pdok.nl/lv/bag/wfs/v2_0&#39;</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>layer <span class="op">=</span> <span class="st">&#39;bag:pand&#39;</span>  <span class="co"># see wfs.contents</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>bb <span class="op">=</span> <span class="st">&#39;,&#39;</span>.join(<span class="bu">map</span>(<span class="bu">str</span>, bbox))  <span class="co"># string of bbox needed for the request url</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># Get the WFS of the BAG</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>wfsUrl <span class="op">=</span> <span class="st">&#39;https://service.pdok.nl/lv/bag/wfs/v2_0&#39;</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>wfs <span class="op">=</span> WebFeatureService(url<span class="op">=</span>wfsUrl, version<span class="op">=</span><span class="st">&#39;2.0.0&#39;</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>layer <span class="op">=</span> <span class="bu">list</span>(wfs.contents)[<span class="dv">0</span>]</span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co"># Specify the parameters for fetching the data</span></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>params <span class="op">=</span> <span class="bu">dict</span>(service<span class="op">=</span><span class="st">&#39;WFS&#39;</span>, version<span class="op">=</span><span class="st">&quot;1.1.0&quot;</span>, request<span class="op">=</span><span class="st">&#39;GetFeature&#39;</span>,</span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>              typeName<span class="op">=</span>layer, outputFormat<span class="op">=</span><span class="st">&#39;json&#39;</span>,</span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>              srsname<span class="op">=</span><span class="st">&#39;urn:ogc:def:crs:EPSG::28992&#39;</span>, bbox<span class="op">=</span>bb)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co"># Get the features for the study area</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># notice that we now get them as json, in contrast to before</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>response <span class="op">=</span> wfs.getfeature(typename<span class="op">=</span>layer, bbox<span class="op">=</span>bbox, outputFormat<span class="op">=</span><span class="st">&#39;json&#39;</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>data <span class="op">=</span> json.loads(response.read())</span>
 <span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a></span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co"># Parse the URL with parameters</span></span>
-<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>q <span class="op">=</span> Request(<span class="st">&#39;GET&#39;</span>, url, params<span class="op">=</span>params).prepare().url</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co"># Create GeoDataFrame, without saving first</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>buildings_gdf <span class="op">=</span> gpd.GeoDataFrame.from_features(data[<span class="st">&#39;features&#39;</span>])</span>
 <span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a></span>
-<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co"># Read data from URL</span></span>
-<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>buildings_gdf <span class="op">=</span> gpd.read_file(q)</span></code></pre></div>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co"># Set crs to RD New</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>buildings_gdf.crs <span class="op">=</span> <span class="dv">28992</span></span></code></pre></div>
+<!-- Used for the previous code but there were some issues downloading data via requests so the code block was replaced
 <div class="alert alert-success">
 <blockquote>
-<p>
-<strong>Question 4</strong>: What happens in the line “bb =
-‘,’.join(map(str, bbox))”? Look up how <code>map()</code> <a href="https://www.geeksforgeeks.org/python-map-function/">works in
-Python</a> if you do not know.
-</p>
+<p><strong>Question 4</strong>: What happens in the line “bb =
+‘,’.join(map(str, bbox))”? Look up how <code>map()</code> <a
+href="https://www.geeksforgeeks.org/python-map-function/">works in
+Python</a> if you do not know.</p>
 </blockquote>
 </div>
+-->
 <p>The next step is to perform zonal statistics to get the average
 height value per building polygon. We will do this with the module
 Rasterstats, which can use a <code>GeoDataFrame</code> and a
@@ -1299,11 +1322,18 @@ data on the map:</p>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 5</strong>: Why do we want an equal scale in the x and
+<strong>Question 4</strong>: Why do we want an equal scale in the x and
 y direction for this figure?
 </p>
 </blockquote>
 </div>
+<details>
+<summary>
+<strong>Click for answer</strong>
+</summary>
+To visualize the buildings properly, otherwise their geometries will be
+skewed.
+</details>
 </div>
 <div id="other-functionality" class="section level2">
 <h2>Other functionality</h2>
@@ -1411,13 +1441,23 @@ Matplotlib.</p>
 <div class="alert alert-success">
 <blockquote>
 <p>
-<strong>Question 6</strong>: What is represented on the x and y axis?
+<strong>Question 5</strong>: What is represented on the x and y axis?
 The default axis labels are DN (x) and Frequency (y); if you were to
 change them, what labels would you pick to better reflect the content of
 the plots?
 </p>
 </blockquote>
 </div>
+<details>
+<summary>
+<strong>Click for answer</strong>
+</summary>
+The y axis represents the count of pixels. Meanwhile the x axis
+represents the pixel’s DN(digital value), in this tutorial since we are
+looking at elevation this value is actually meters. For example, in the
+first plot (DSM) you can see that most pixel values are in the 10 to 15
+meter range
+</details>
 </div>
 <div id="more-info" class="section level1">
 <h1>More info</h1>
