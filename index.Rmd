@@ -153,7 +153,7 @@ Before continuing, please check if this step was successful.
 <center>
 <img src="./images/gdal.png" alt="gdal structure" width = "90%">
 <figcaption>GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.</figcaption>
-<center>
+</center>
 </figure>
 
 Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
