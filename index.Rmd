@@ -1,25 +1,31 @@
 ---
-pagetitle: "Tutorial 10: Raster data handling with Python"
+pagetitle: "Raster data handling with Python"
 author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
-  knitrBootstrap::bootstrap_document:
-    title: "Tutorial 10: Raster data handling with Python"
-    theme: "simplex"
-    highlight: Tomorrow Night Bright
-    menu: FALSE
-    theme.chooser: TRUE
-    highlight.chooser: TRUE
+  rmdformats::html_clean:
+    highlight: zenburn
 ---
 
-<style type="text/css">
-body {max-width: none;}
-a:visited {color: #91170a;}
-</style>
+```{css, echo=FALSE}
+@import url("https://netdna.bootstrapcdn.com/bootswatch/3.0.0/simplex/bootstrap.min.css");
+.main-container {max-width: none;}
+div.figcaption {display: none;}
+pre {color: inherit; background-color: inherit;}
+code[class^="sourceCode"]::before {
+  content: attr(class);
+  display: block;
+  text-align: right;
+  font-size: 70%;
+}
+code[class^="sourceCode r"]::before { content: "R Source";}
+code[class^="sourceCode python"]::before { content: "Python Source"; }
+code[class^="sourceCode bash"]::before { content: "Bash Source"; }
+```
 
-# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/>
+<font size="6">[WUR Geoscripting](https://geoscripting-wur.github.io/)</font> <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px; margin:inherit;"/>
 
-# Week 3, Tutorial 10: Raster data handling with Python
+# Raster data handling with Python
 
 ## Introduction
 
@@ -82,13 +88,13 @@ Today we will work with elevation rasters. More specifically, we will have a loo
 from owslib.wcs import WebCoverageService
 
 # Access the WCS by proving the url and optional arguments
-wcs = WebCoverageService('http://geodata.nationaalgeoregister.nl/ahn3/wcs?service=WCS', version='1.0.0')
+wcs = WebCoverageService('https://service.pdok.nl/rws/ahn/wcs/v1_0?SERVICE=WCS&request=GetCapabilities', version='1.0.0')
 
 # Print to check the contents of the WCS
 print(list(wcs.contents))
 ```
 
-Running the last line of code shows that the Web Coverage Service of the AHN3 contains four rasters: 0.5m DSM, 0.5m DTM, 5m DSM, and 5m DTM. Raster data of AHN has the projected coordinate system `RD_New (EPSG: 28992)`.
+Running the last line of code shows that the Web Coverage Service of the AHN3 contains two rasters: 0.5m DSM, and 0.5m DTM. Raster data of AHN has the projected coordinate system `RD_New (EPSG: 28992)`.
 
 We can also check what types of operations are available for this WCS:
 
@@ -103,7 +109,7 @@ Several functions are available to access specific metadata of each individual r
 
 ```{r, engine = 'Python', eval=FALSE}
 # Take the 0.5m DSM as an example
-cvg = wcs.contents['ahn3_05m_dsm']
+cvg = wcs.contents['dsm_05m']
 
 # Print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats
 print(cvg.supportedCRS)
@@ -113,7 +119,7 @@ print(cvg.supportedFormats)
 
 Let us have a look at the data itself. As we do not want to overload the web service, we download once and store the data locally. 
 
-Download the Digital Surface Model [DSM], which is the the 'ahn3_05m_dsm' version, and Digital Terrain Model [DTM], which is the 'ahn3_05m_dtm' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
+Download the Digital Surface Model [DSM], which is the the 'dsm_05m' version, and Digital Terrain Model [DTM], which is the 'dtm_05m' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
 
 ```{r, engine = 'Python', eval=FALSE}
 import os
@@ -123,7 +129,7 @@ x, y = 174100, 444100
 bbox = (x - 500, y - 500, x + 500, y + 500)
 
 # Request the DSM data from the WCS
-response = wcs.getCoverage(identifier='ahn3_05m_dsm', bbox=bbox, format='GEOTIFF_FLOAT32',
+response = wcs.getCoverage(identifier='dsm_05m', bbox=bbox, format='GEOTIFF',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
 # Write the data to a local file in the 'data' directory
@@ -131,7 +137,7 @@ with open('data/AHN3_05m_DSM.tif', 'wb') as file:
     file.write(response.read())
 
 # Do the same for the DTM
-response = wcs.getCoverage(identifier='ahn3_05m_dtm', bbox=bbox, format='GEOTIFF_FLOAT32',
+response = wcs.getCoverage(identifier='dtm_05m', bbox=bbox, format='GEOTIFF',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
 with open('data/AHN3_05m_DTM.tif', 'wb') as file:
@@ -144,8 +150,10 @@ Before continuing, please check if this step was successful.
 [GDAL](https://gdal.org/) handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
 
 <figure>
+<center>
 <img src="./images/gdal.png" alt="gdal structure" width = "90%">
 <figcaption>GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.</figcaption>
+</center>
 </figure>
 
 Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
@@ -169,7 +177,13 @@ ds = None
 
 ```{block, type="alert alert-success"}
 > **Question 1**: Why do we set ds to None at the end of your script? What may happen if you do not do that?
+
 ```
+<details>
+  <summary>**Click for answer**</summary>
+  Keeping files open may leave you vulnerable to losing data, (Geo)Pandas manage resources under the hood so you don't explicitly need to close files, but for the case of GDAL, and as you will later see, Rasterio, it's important to close your files or open them with a context manager `with open ...`
+</details>
+
 
 The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module. 
 
@@ -204,6 +218,11 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 ```{block, type="alert alert-success"}
 > **Question 2**: Adjust the code above to take a look at the DTM. Note the gaps that appear. What are these gaps?
 ```
+<details>
+  <summary>**Click for answer**</summary>
+  These are buildings.
+</details>
+
 
 The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
 
@@ -271,6 +290,11 @@ with rasterio.open('data/AHN3_05m_CHM.tif', 'w', **kwargs) as file:
 ```{block, type="alert alert-success"}
 > **Question 3**: Where is the CHM the highest in the study area? Is it what you expected?
 ```
+<details>
+  <summary>**Click for answer**</summary>
+  Think about where you have the most forests on campus.
+</details>
+
 
 We have now applied the basic concepts of creating a Canopy Height Model!
 
@@ -280,28 +304,30 @@ Using our CHM, let's determine the average heights of the buildings in our study
 
 ```{r, engine = 'Python', eval=FALSE}
 import geopandas as gpd
-from requests import Request
+import json
 
-# Extract only buildings on and around WUR campus
-url = 'https://service.pdok.nl/lv/bag/wfs/v2_0'
-layer = 'bag:pand'  # see wfs.contents
-bb = ','.join(map(str, bbox))  # string of bbox needed for the request url
+# Get the WFS of the BAG
+wfsUrl = 'https://service.pdok.nl/lv/bag/wfs/v2_0'
+wfs = WebFeatureService(url=wfsUrl, version='2.0.0')
+layer = list(wfs.contents)[0]
 
-# Specify the parameters for fetching the data
-params = dict(service='WFS', version="1.1.0", request='GetFeature',
-              typeName=layer, outputFormat='json',
-              srsname='urn:ogc:def:crs:EPSG::28992', bbox=bb)
+# Get the features for the study area
+# notice that we now get them as json, in contrast to before
+response = wfs.getfeature(typename=layer, bbox=bbox, outputFormat='json')
+data = json.loads(response.read())
 
-# Parse the URL with parameters
-q = Request('GET', url, params=params).prepare().url
+# Create GeoDataFrame, without saving first
+buildings_gdf = gpd.GeoDataFrame.from_features(data['features'])
 
-# Read data from URL
-buildings_gdf = gpd.read_file(q)
+# Set crs to RD New
+buildings_gdf.crs = 28992
 ```
 
+<!-- Used for the previous code but there were some issues downloading data via requests so the code block was replaced
 ```{block, type="alert alert-success"}
 > **Question 4**: What happens in the line "bb = ','.join(map(str, bbox))"? Look up how `map()` [works in Python](https://www.geeksforgeeks.org/python-map-function/) if you do not know.
 ```
+-->
 
 The next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which can use a `GeoDataFrame` and a `.tif` file for this task. Here, we make it output a [GeoJSON](http://geojson.org/).
 
@@ -340,8 +366,13 @@ plt.show()
 <img src="./images/buildingsGDF.png" alt="Buildings on Wageningen Campus and their height" width = "100%">
 
 ```{block, type="alert alert-success"}
-> **Question 5**: Why do we want an equal scale in the x and y direction for this figure?
+> **Question 4**: Why do we want an equal scale in the x and y direction for this figure?
 ```
+<details>
+  <summary>**Click for answer**</summary>
+  To visualize the buildings properly, otherwise their geometries will be skewed.
+</details>
+
 
 ## Other functionality
 Note that this tutorial only scratches the surface of the possibilities of Rasterio. It can do most if not all things you did in `R` in the Vector - Raster tutorial. Rasterio for example also allows you to do [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html), and [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html).
@@ -438,8 +469,13 @@ plt.show()
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
 
 ```{block, type="alert alert-success"}
-> **Question 6**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+> **Question 5**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
 ```
+<details>
+  <summary>**Click for answer**</summary>
+  The y axis represents the count of pixels. Meanwhile the x axis represents the pixel's DN(digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
+</details>
+
 
 # More info
   * [Tutorial working with rasters in Python with Rasterio](https://geohackweek.github.io/raster/04-workingwithrasters/)
