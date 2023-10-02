@@ -84,7 +84,7 @@ A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature S
 
 Today we will work with elevation rasters. More specifically, we will have a look at the WCS of the AHN dataset. AHN stands for "Actueel Hoogtebestand Nederland" and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 from owslib.wcs import WebCoverageService
 
 # Access the WCS by proving the url and optional arguments
@@ -98,7 +98,7 @@ Running the last line of code shows that the Web Coverage Service of the AHN3 co
 
 We can also check what types of operations are available for this WCS:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Get all operations and print the name of each of them
 print([op.name for op in wcs.operations])
 ```
@@ -107,7 +107,7 @@ You will see that the Web Coverage Service allows accessing the data (GetCoverag
 
 Several functions are available to access specific metadata of each individual raster, for example:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Take the 0.5m DSM as an example
 cvg = wcs.contents['dsm_05m']
 
@@ -121,7 +121,7 @@ Let us have a look at the data itself. As we do not want to overload the web ser
 
 Download the Digital Surface Model [DSM], which is the the 'dsm_05m' version, and Digital Terrain Model [DTM], which is the 'dtm_05m' version, to a local file. The difference between a DEM, DSM and DTM is explained on the [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704).
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import os
 
 # Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it
@@ -158,7 +158,7 @@ Before continuing, please check if this step was successful.
 
 Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 from osgeo import gdal
 
 # Open dataset, gdal automatically selects the correct driver
@@ -195,7 +195,7 @@ The rest of the tutorial below is a complete route of handling a raster dataset.
 
 Let us read in the raster data we just stored from the WCS with Rasterio and plot it with `rasterio.plot`:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import rasterio
 from rasterio.plot import show
 import matplotlib.pyplot as plt
@@ -228,7 +228,7 @@ The metadata shows the driver (GDAL's way of knowing how to function with a spec
 
 In the back-end, raster layers in Rasterio are stored as NumPy arrays, which appear when the data are read with the method `.read()`:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Rasterio object
 print(type(dsm))
 
@@ -244,7 +244,7 @@ print(dsm_data)
 
 A Canopy Height Model (CHM) gives an indication of the height of trees and/or buildings. It can be created by subtracting a Digital Terrain Model from a Digital Surface Model. In the resulting raster, each cell value represents the height above the underlying surface topography.
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import numpy as np
 
 # Access the data from the two rasters
@@ -258,7 +258,7 @@ dtm_data[dtm_data == dtm.nodata] = np.nan
 
 Earlier, we noticed that the DTM included gaps. Let's first fill these gaps using the `fillnodata()` function from `rasterio.fill`. For more information, see the [documentation](https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html).
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 from rasterio.fill import fillnodata
 
 # Create a mask to specify which pixels to fill (0=fill, 1=do not fill)
@@ -272,7 +272,7 @@ dtm_data = fillnodata(dtm_data, mask=dtm_mask)
 
 Now, let's can create our CHM:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Subtract the NumPy arrays 
 chm = dsm_data - dtm_data
 
@@ -302,9 +302,10 @@ We have now applied the basic concepts of creating a Canopy Height Model!
 
 Using our CHM, let's determine the average heights of the buildings in our study area. The first step is to download building data from the BAG Web Feature Service that we also used in the vector tutorial. Note that we make use of the `bbox` from an earlier codeblock for this.
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import geopandas as gpd
 import json
+from owslib.wfs import WebFeatureService
 
 # Get the WFS of the BAG
 wfsUrl = 'https://service.pdok.nl/lv/bag/wfs/v2_0'
@@ -331,7 +332,7 @@ buildings_gdf.crs = 28992
 
 The next step is to perform zonal statistics to get the average height value per building polygon. We will do this with the module Rasterstats, which can use a `GeoDataFrame` and a `.tif` file for this task. Here, we make it output a [GeoJSON](http://geojson.org/).
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import rasterstats as rs
 
 # Apply the zonal statistics function with gdf and tif as input
@@ -346,7 +347,7 @@ print(buildings_gdf['CHM_mean'])
 
 A quick visualization shows us the heights derived from the raster data on the map:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Create one plot with figure size 10 by 10
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
@@ -384,7 +385,7 @@ To create metadata from scratch, the CRS can be defined with a function from Ras
 
 Rasterio can write most [raster formats from GDAL](https://www.gdal.org/formats_list.html). [The developers recommend using GeoTiff driver](https://github.com/mapbox/rasterio/issues/731) for writing as it is the best-tested and best-supported format. 
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 import affine
 
 # Specify the components of the crs (we know them from the DSM)
@@ -406,7 +407,7 @@ with rasterio.open('data/AHN3_05m_CHM_affine.tif', 'w', **kwargs) as file:
 
 Raster data can be visualized by passing NumPy arrays to Matplotlib directly or by making use of a method in Rasterio that accesses Matplotlib for you. Using Matplotlib directly allows more flexibility, such as tweaking the legend, axis and labels, and is more suitable for professional purposes. The visualization using Rasterio requires less code and can give a quick idea of your raster data. We show both approaches below. Let's first make a visualization of the DSM using Matplotlib:
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Create one plot with figure size 10 by 10
 fig, ax = plt.subplots(figsize=(10, 10), dpi=200)
 
@@ -433,7 +434,7 @@ If you do not like the orange colourmap of Matplotlib, it is also possible to pi
 
 The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (this can be done with Matplotlib directly as well).
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 # Figure with three subplots, unpack directly
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
 
@@ -448,7 +449,7 @@ plt.show()
 
 Rasterio can also create simple histograms by calling functions of Matplotlib.
 
-```{r, engine = 'Python', eval=FALSE}
+```{python, eval=FALSE}
 from rasterio.plot import show_hist
 
 # Figure with three subplots, unpack directly
