@@ -1109,7 +1109,6 @@ before the data array can be accessed.</p>
 script? What may happen if you do not do that?
 </p>
 </blockquote>
-</div>
 <details>
 <summary>
 <strong>Click for answer</strong>
@@ -1118,8 +1117,9 @@ Keeping files open may leave you vulnerable to losing data, (Geo)Pandas
 manage resources under the hood so you don’t explicitly need to close
 files, but for the case of GDAL, and as you will later see, Rasterio,
 it’s important to close your files or open them with a context manager
-<code>with open ...</code>
+<code>with open …</code>
 </details>
+</div>
 <p>The GDAL Python API is not the best documented Python module.
 Therefore, Rasterio is explained as an alternative raster data handling
 module.</p>
@@ -1160,13 +1160,13 @@ Rasterio and plot it with <code>rasterio.plot</code>:</p>
 DTM. Note the gaps that appear. What are these gaps?
 </p>
 </blockquote>
-</div>
 <details>
 <summary>
 <strong>Click for answer</strong>
 </summary>
 These are buildings.
 </details>
+</div>
 <p>The metadata shows the driver (GDAL’s way of knowing how to function
 with a specific file format), datatype, nodata value, width of raster in
 number of cells, height of raster in number of cells, number of raster
@@ -1234,13 +1234,13 @@ these gaps using the <code>fillnodata()</code> function from
 area? Is it what you expected?
 </p>
 </blockquote>
-</div>
 <details>
 <summary>
 <strong>Click for answer</strong>
 </summary>
 Think about where you have the most forests on campus.
 </details>
+</div>
 <p>We have now applied the basic concepts of creating a Canopy Height
 Model!</p>
 </div>
@@ -1318,7 +1318,6 @@ data on the map:</p>
 y direction for this figure?
 </p>
 </blockquote>
-</div>
 <details>
 <summary>
 <strong>Click for answer</strong>
@@ -1326,6 +1325,7 @@ y direction for this figure?
 To visualize the buildings properly, otherwise their geometries will be
 skewed.
 </details>
+</div>
 </div>
 <div id="other-functionality" class="section level2">
 <h2>Other functionality</h2>
@@ -1439,7 +1439,6 @@ change them, what labels would you pick to better reflect the content of
 the plots?
 </p>
 </blockquote>
-</div>
 <details>
 <summary>
 <strong>Click for answer</strong>
@@ -1450,6 +1449,7 @@ looking at elevation this value is actually meters. For example, in the
 first plot (DSM) you can see that most pixel values are in the 10 to 15
 meter range
 </details>
+</div>
 </div>
 <div id="more-info" class="section level1">
 <h1>More info</h1>
