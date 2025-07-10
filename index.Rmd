@@ -144,7 +144,7 @@ with open('data/AHN3_05m_DTM.tif', 'wb') as file:
     file.write(response.read())
 ```
 
-Before continuing, please check if this step was successful.
+Before continuing, please check if this step was successful (*Hint: you can check if files have been written into corresponding directory*).
 
 ## From a file with GDAL
 [GDAL](https://gdal.org/) handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
@@ -155,6 +155,7 @@ Before continuing, please check if this step was successful.
 <figcaption>GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.</figcaption>
 </center>
 </figure>
+
 
 Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
 
@@ -177,13 +178,14 @@ ds = None
 
 ```{block, type="alert alert-success"}
 > **Question 1**: Why do we set ds to None at the end of your script? What may happen if you do not do that?
-
 <details>
-  <summary>**Click for answer**</summary>
+  <summary>*Click for answer*</summary>
   Keeping files open may leave you vulnerable to losing data, (Geo)Pandas manage resources under the hood so you don't explicitly need to close files, but for the case of GDAL, and as you will later see, Rasterio, it's important to close your files or open them with a context manager `with open ...`
 </details>
-
 ```
+
+
+
 The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module. 
 
 ## From a file with Rasterio
@@ -216,12 +218,12 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 
 ```{block, type="alert alert-success"}
 > **Question 2**: Adjust the code above to take a look at the DTM. Note the gaps that appear. What are these gaps?
-
 <details>
-  <summary>**Click for answer**</summary>
+  <summary>*Click for answer*</summary>
   These are buildings.
 </details>
 ```
+
 
 
 The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
@@ -289,9 +291,8 @@ with rasterio.open('data/AHN3_05m_CHM.tif', 'w', **kwargs) as file:
 
 ```{block, type="alert alert-success"}
 > **Question 3**: Where is the CHM the highest in the study area? Is it what you expected?
-
 <details>
-  <summary>**Click for answer**</summary>
+  <summary>*Click for answer*</summary>
   Think about where you have the most forests on campus.
 </details>
 ```
@@ -370,13 +371,13 @@ plt.show()
 
 ```{block, type="alert alert-success"}
 > **Question 4**: Why do we want an equal scale in the x and y direction for this figure?
-
 <details>
-  <summary>**Click for answer**</summary>
+  <summary>*Click for answer*</summary>
   To visualize the buildings properly, otherwise their geometries will be skewed.
 </details>
-
 ```
+
+
 
 ## Other functionality
 Note that this tutorial only scratches the surface of the possibilities of Rasterio. It can do most if not all things you did in `R` in the Vector - Raster tutorial. Rasterio for example also allows you to do [masking](https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html), [reprojecting](https://rasterio.readthedocs.io/en/latest/topics/reproject.html), and [resampling](https://rasterio.readthedocs.io/en/latest/topics/resampling.html).
@@ -474,12 +475,12 @@ plt.show()
 
 ```{block, type="alert alert-success"}
 > **Question 5**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
-
 <details>
-  <summary>**Click for answer**</summary>
-  The y axis represents the count of pixels. Meanwhile the x axis represents the pixel's DN(digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
+  <summary>*Click for answer*</summary>
+  The y axis represents the count of pixels. Meanwhile the x axis represents the pixel's DN (digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
 </details>
 ```
+
 
 
 # More info
