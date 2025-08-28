@@ -77,6 +77,7 @@ dependencies:
 After creation, activate the environment, open Spyder, create a script in the root directory, and start coding.
 
 # Reading raster data and accessing metadata
+There are numerous way to access raster data in Python. In fact, most of these methods are not limited to python, in R you can use similar implementations just as well. The other way around, from some of the methods introduced earlier there are also python implementation. And there are a lot more ways, we can't cover everything... 
 
 ## From a Web Coverage Service
 
@@ -146,8 +147,9 @@ with open('data/AHN3_05m_DTM.tif', 'wb') as file:
 
 Before continuing, please check if this step was successful (*Hint: you can check if files have been written into corresponding directory*).
 
+
 ## From a file with GDAL
-[GDAL](https://gdal.org/) handles raster and vector geospatial data formats with Python, Java, R and C APIs. When opening a raster file in gdal, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
+[GDAL](https://gdal.org/) is the fundament under most spatial operations, reading and writing and a lot more. GDAL is a C++ library that can handle raster and vector geospatial data formats. There are APIs to access GDAL functionality in Python, but also in  Java, R and C. When opening a raster file in GDAL, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.
 
 <figure>
 <center>
@@ -156,8 +158,9 @@ Before continuing, please check if this step was successful (*Hint: you can chec
 </center>
 </figure>
 
+As you can see handling spatial data with GDAL can become a bit confusing. But since it is so fundamental it is good to get familiar with the basics of GDAL. Luckily there are packages that build upon GDAL that make life a bit easier, but they all use GDAL under the hood. More on those packages later, first let's have a look at opening geotiff in GDAL.
 
-Let us open the file we just saved. You will see you first get the dataset, and need to access the band (even though there is only one), before the data array can be accessed.
+Let us open the file we just saved. You will see you first get the dataset (even though there is only one), before the data array can be accessed.
 
 ```{python, eval=FALSE}
 from osgeo import gdal
@@ -183,10 +186,6 @@ ds = None
   Keeping files open may leave you vulnerable to losing data, (Geo)Pandas manage resources under the hood so you don't explicitly need to close files, but for the case of GDAL, and as you will later see, Rasterio, it's important to close your files or open them with a context manager `with open ...`
 </details>
 ```
-
-
-
-The GDAL Python API is not the best documented Python module. Therefore, Rasterio is explained as an alternative raster data handling module. 
 
 ## From a file with Rasterio
 
@@ -224,9 +223,7 @@ show(dsm, title='Digital Surface Model', cmap='gist_ncar')
 </details>
 ```
 
-
-
-The metadata shows the driver (GDAL's way of knowing how to function with a specific file format), datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
+The metadata shows the driver, datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values. 
 
 In the back-end, raster layers in Rasterio are stored as NumPy arrays, which appear when the data are read with the method `.read()`:
 
@@ -455,20 +452,24 @@ Rasterio can also create simple histograms by calling functions of Matplotlib.
 
 ```{python, eval=FALSE}
 from rasterio.plot import show_hist
+import numpy as np
 
-# Figure with three subplots, unpack directly
-fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
+# Stack the three arrays along a new axis to create a 3-band raster
+# Ensure all arrays have the same shape and are 2D
+three_band_array = np.stack([dsm_data, dtm_data, chm], axis=0).squeeze()
 
-# Populate the three subplots with histograms
-show_hist(dsm_data, ax=axdsm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram DSM")
-show_hist(dtm_data, ax=axdtm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram filled DTM")
-show_hist(chm, ax=axchm, bins=100, lw=0.0, stacked=False, alpha=0.3, title="Histogram CHM")
+# Copy metadata and update for 3 bands
+three_band_meta = dsm.meta.copy()
+three_band_meta.update(count=3)
 
-# Build legends and show
-axdsm.legend(['DSM'])
-axdtm.legend(['Filled DTM'])
-axchm.legend(['CHM'])
-plt.show()
+# Write the 3-band raster to file
+with rasterio.open('data/AHN3_05m_3band.tif', 'w', **three_band_meta) as dst:
+  dst.write(three_band_array.astype(rasterio.float32))
+
+with rasterio.open('data/AHN3_05m_3band.tif') as raster:
+  show_hist(raster, bins=50, lw=0.0, stacked=False, alpha=0.3, 
+            histtype='stepfilled', title="Histogram", label = ['dsm', 'dtm', 'chm'])
+
 ```
 
 <img src="./images/DSMDTMCHMHistogram.png" alt="Histograms of Canopy Height, Digital Surface and Terrain Model of WUR Campus" width = "100%">
