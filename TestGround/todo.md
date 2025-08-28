@@ -3,4 +3,5 @@
   * https://geohackweek.github.io/raster/04-workingwithrasters/
   * https://rasterio.readthedocs.io/en/latest/quickstart.html
   * https://tutorial.xarray.dev/intro.html
+  * https://github.com/EricThomson/practical_python/blob/main/week3.ipynb
   * 
