@@ -237,6 +237,43 @@ print(type(dsm_data))
 print(dsm_data)
 ```
 
+## STAC 
+In the examples above, we have looked at single images or relatively small areas. In the past years the amount of data that we are capturing has been growing. Websvervices are not suitable for sharing very large quantities of multimodal or multidimensional data. Searching and accessing these volumes of data can be done using the Spatial Temporal Asset Catalogue (STAC). 
+
+This is a very short, and very incomplete description of what STAC is and how to use it. For a more elaborate tutorial visit the dedicated [STAC tutorial](https://geoscripting-wur.github.io/STAC/). 
+
+STAC is a standard with a strong community working on enabling easier acces to data about our planet. It provides a standardized structure for accessing spatiotemporal datasets. The starting point is usually a STAC catalog, for example [https://stac.ecodatacube.eu/](https://stac.ecodatacube.eu/?.language=en). This website is a visual representation of a `catalog.json` file, that can be accessed by clicking on the source button in the top right. It is possible to search the catalog programatically, and is discussed in the [STAC Tutorial](https://geoscripting-wur.github.io/STAC/). An alternative is to browse through the viewer and find relevant datasets there.
+
+A *STAC catalog* consists of a links to *collections*, *items* or other catalogs. A STAC collection is a collection of STAC items with similar traits. For example [`https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json`](https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json) (that can be found through the ecodatacube catalog). This collection, is a collection of STAC items regarding the soil organic carbon density (SOCD). In this case it links to  datasets at different depths, at different timeframes. 
+
+Generally these separate datasets can be found by a url stored in the items. These urls point, in the case of raster data, to a Cloud Optimized GeoTiff (COG). This is a Tiff file as we know it, it also ends at `.tiff`, but it contains some indexing and other metadata that  makes the file searchable remotely instead of having to download the entire file before being able to for example mask a part of it. 
+
+```{python, eval=False}
+import rasterio
+from rasterio.mask import mask
+from shapely import box
+import matplotlib.pyplot as plt
+
+# Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it
+bbox = box( 4021321,3213709,  4028479, 3217978) # In EPSG:3035 - same as raster
+
+# get url from item asset link
+asset_url = 'https://s3.ecodatacube.eu/arco/ndvi_glad.landsat.ard2.seasconv.m.yearly_p25_30m_s_20220101_20221231_eu_epsg.3035_v20231127.tif'
+
+# open raster directly from S3 (requires rasterio with HTTP enabled, which is default)
+with rasterio.open(asset_url) as src:
+    # crop the raster with the polygon
+    out_image, out_transform = mask(src, [bbox], crop=True)
+
+# plot the cropped raster
+plt.imshow(out_image[0], cmap="viridis")
+plt.title("Cropped raster over Wageningen")
+plt.colorbar(label="Value")
+plt.show()
+```
+
+
+
 # Processing raster data
 
 ## Creating a Canopy Height Model
