@@ -1,6 +1,6 @@
 ---
 pagetitle: "Raster data handling with Python"
-author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil"
+author: "Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil, Arno Timmer"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   rmdformats::html_clean:
@@ -248,7 +248,7 @@ A *STAC catalog* consists of a links to *collections*, *items* or other catalogs
 
 Generally these separate datasets can be found by a url stored in the items. These urls point, in the case of raster data, to a Cloud Optimized GeoTiff (COG). This is a Tiff file as we know it, it also ends at `.tiff`, but it contains some indexing and other metadata that  makes the file searchable remotely instead of having to download the entire file before being able to for example mask a part of it. 
 
-```{python, eval=False}
+```{python, eval=FALSE}
 import rasterio
 from rasterio.mask import mask
 from shapely import box
