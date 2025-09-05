@@ -272,9 +272,8 @@ plt.colorbar(label="Value")
 plt.show()
 ```
 
-
-
 # Processing raster data
+Now that we have some options to read data into python, let's have a look at what we can do with it. 
 
 ## Creating a Canopy Height Model
 
