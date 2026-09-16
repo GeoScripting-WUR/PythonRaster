@@ -50,7 +50,7 @@ Today we will work with Python packages for spatial raster analysis. Python has 
 - Be able to read spatial raster data from web services and files
 - Be able to write spatial raster formats to disk
 - Know how to apply basic operations on raster data, such as arithmetics
-- Be able to plot spatial raster data with Matplotlib 
+- Be able to plot spatial raster data with Matplotlib
 
 ## Setting up the Python Environment
 Like in the previous tutorials, we will create a pixi environment. Do this by creating a directory for this tutorial, copying the following text in a `pixi.toml` file and run `pixi install`. 
