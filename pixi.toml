@@ -1,0 +1,21 @@
+[workspace]
+authors = ["Arno Timmer <arno.timmer@wur.nl>"]
+channels = ["conda-forge"]
+name = "raster"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "*"
+numpy = "*"
+matplotlib = "*"
+owslib = "*"
+gdal = "*"
+geopandas = "*"
+rasterio = "*"
+rasterstats = "*"
+affine = "*"
+osmnx = "*"
+ipykernel = "*"

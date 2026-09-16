@@ -1,0 +1,42 @@
+@import url("https://netdna.bootstrapcdn.com/bootswatch/3.0.0/simplex/bootstrap.min.css");
+
+.main-container { max-width: none; }
+pre { color: inherit; background-color: inherit; }
+
+code[class^="sourceCode"]::before {
+  content: attr(class);
+  display: block;
+  text-align: right;
+  font-size: 70%;
+}
+
+code[class^="sourceCode r"]::before { content: "R Source"; }
+code[class^="sourceCode python"]::before { content: "Python Source"; }
+code[class^="sourceCode bash"]::before { content: "Bash Source"; }
+
+/* Only target inline code, not code inside pre blocks */
+p code:not(.sourceCode),
+li code:not(.sourceCode),
+td code:not(.sourceCode) {
+ background-color: #f5f5f5;
+  color: #c7254e;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+
+.page-header-title {
+  font-size: 2rem; /* roughly equivalent to <font size="6"> */
+}
+
+.page-header-logo {
+  height: 50px;
+  vertical-align: middle;
+}
+
+/* Quarto only centers the image <p>/<div> inside a centered figure, not
+   the <figcaption> itself, so a resized image's caption is left-aligned
+   below it instead of centered under the image. */
+.quarto-figure-center figcaption {
+  text-align: center;
+}
