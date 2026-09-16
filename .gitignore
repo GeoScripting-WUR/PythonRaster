@@ -4,4 +4,6 @@
 .Ruserdata
 .idea
 data/
-.vscode
+.vscode# pixi environments
+.pixi/*
+!.pixi/config.toml
