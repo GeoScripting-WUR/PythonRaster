@@ -84,7 +84,7 @@ Create the necessary directories for this tutorial (for this we use the nifty [P
 ```{python}
 from pathlib import Path
 
-base = Path(r'C:\workdir\courses-workdir\GRS33806\development\website\PythonRaster') # This references the location of your script
+base = Path.home() # This references the location of your script
 (base / "data").mkdir(exist_ok=True)
 ```
 
@@ -162,14 +162,14 @@ response = wcs.getCoverage(identifier='dsm_05m', bbox=bbox, format='GEOTIFF',
 
 # Write the data to a local file in the 'data' directory
 with open(base / "data" / "AHN3_05m_DSM.tif", 'wb') as file:
-    file.write(response.read())
+    _ = file.write(response.read()) # file.write returns the number of bytes written
 
 # Do the same for the DTM
 response = wcs.getCoverage(identifier='dtm_05m', bbox=bbox, format='GEOTIFF',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
 with open(base / "data" / "AHN3_05m_DTM.tif", 'wb') as file:
-    file.write(response.read())
+    _ = file.write(response.read())
 ```
 
 That's a very short introduction to webservices and accessing with Python. The datasets that you now stored locally we will use in the rest of the tutorial. Before continuing, please check if these steps were successful (*Check if files have been written into corresponding directory*).
@@ -250,7 +250,7 @@ The metadata shows the driver, datatype, nodata value, width of raster in number
 
 Rasterio allows us to access the data values in a raster as NumPy arrays. We can use the `.read()` method to access these:
 
-```{python, eval=FALSE}
+```{python}
 # Rasterio object
 print(type(dsm))
 
@@ -302,7 +302,7 @@ dtm_mask[np.isnan(dtm_data)] = 0
 dtm_data = fillnodata(dtm_data, mask=dtm_mask)
 ```
 
-Now, we can create a CHM (as [remember](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704)):
+Now, we can create a CHM ([remember](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704?)): 
 
 ```{python}
 # Subtract the NumPy arrays 
@@ -454,7 +454,7 @@ If you do not like the orange colourmap of Matplotlib, it is also possible to pi
 
 The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (this can be done with Matplotlib directly as well).
 
-```{python, eval=FALSE}
+```{python}
 # Figure with 1 row with 3 columns (1,3), so 3 subplots. 
 # They are unpacked directly, plt.subplot returns fig and a tuple of the 3 axes
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
@@ -468,7 +468,7 @@ plt.show()
 
 Rasterio can also create simple histograms by calling functions of Matplotlib. Let's see if the 3 different elevation models are different comparing their histograms. For a bit of efficiency, we will stack the three models and store them as a three band raster. We will open it again and look at its histogram. 
 
-```{python, eval=FALSE}
+```{python}
 from rasterio.plot import show_hist
 import numpy as np
 
