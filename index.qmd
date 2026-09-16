@@ -75,7 +75,6 @@ geopandas = "*"
 rasterio = "*"
 rasterstats = "*"
 affine = "*"
-osmnx = "*"
 ipykernel = "*"
 ```
 
@@ -101,12 +100,6 @@ Before we will look into how to deal with local files and data processing, we wi
 Conveniently, the data that we will access and store locally, will be used throughout this tutorial to introduce libraries that can be used for reading, writing and processing raster data in Python.
 
 Lastly, we will look a more recent development in the area of analyzing (sometimes very large and multidimensional) remotely stored raster datasets. 
-
-::: {.callout-warning}
-TODO: revise this argument
-Check if intro still covers material in qmd.
-:::
-
 
 ## From a Web Coverage Service
 
@@ -493,7 +486,7 @@ with rasterio.open(base / "data" / "AHN3_05m_3band.tif") as raster:
 
 
 ::: {.callout-note appearance="simple"}
-**Question 5**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+**Question 4**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
 <details>
   <summary>*Click for answer*</summary>
   The y axis represents the count of pixels. Meanwhile the x axis represents the pixel's DN (digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
