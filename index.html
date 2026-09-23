@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil, Arno Timmer">
+<meta name="dcterms.date" content="2026-09-23">
+
+<title>Raster data handling with Python – Python Raster</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-f1a5c2bb43452cd3d80060817c0f5863.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-bdb1f3eb971eca97e385bc6bee2653ab.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#raster-data-handling-with-python" id="toc-raster-data-handling-with-python" class="nav-link active" data-scroll-target="#raster-data-handling-with-python">Raster data handling with Python</a>
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#setting-up-the-python-environment" id="toc-setting-up-the-python-environment" class="nav-link" data-scroll-target="#setting-up-the-python-environment">Setting up the Python Environment</a></li>
+  </ul></li>
+  <li><a href="#reading-raster-data-and-accessing-metadata" id="toc-reading-raster-data-and-accessing-metadata" class="nav-link" data-scroll-target="#reading-raster-data-and-accessing-metadata">Reading raster data and accessing metadata</a>
+  <ul class="collapse">
+  <li><a href="#from-a-web-coverage-service" id="toc-from-a-web-coverage-service" class="nav-link" data-scroll-target="#from-a-web-coverage-service">From a Web Coverage Service</a></li>
+  <li><a href="#from-a-file-with-gdal" id="toc-from-a-file-with-gdal" class="nav-link" data-scroll-target="#from-a-file-with-gdal">From a file with GDAL</a></li>
+  <li><a href="#from-a-file-with-rasterio" id="toc-from-a-file-with-rasterio" class="nav-link" data-scroll-target="#from-a-file-with-rasterio">From a file with Rasterio</a></li>
+  </ul></li>
+  <li><a href="#processing-raster-data" id="toc-processing-raster-data" class="nav-link" data-scroll-target="#processing-raster-data">Processing raster data</a>
+  <ul class="collapse">
+  <li><a href="#creating-a-canopy-height-model" id="toc-creating-a-canopy-height-model" class="nav-link" data-scroll-target="#creating-a-canopy-height-model">Creating a Canopy Height Model</a></li>
+  <li><a href="#computing-heights-of-buildings" id="toc-computing-heights-of-buildings" class="nav-link" data-scroll-target="#computing-heights-of-buildings">Computing heights of buildings</a></li>
+  <li><a href="#other-functionality" id="toc-other-functionality" class="nav-link" data-scroll-target="#other-functionality">Other functionality</a></li>
+  </ul></li>
+  <li><a href="#writing-raster-data-to-a-file" id="toc-writing-raster-data-to-a-file" class="nav-link" data-scroll-target="#writing-raster-data-to-a-file">Writing raster data to a file</a></li>
+  <li><a href="#more-on-raster-data-visualization" id="toc-more-on-raster-data-visualization" class="nav-link" data-scroll-target="#more-on-raster-data-visualization">More on raster data visualization</a>
+  <ul class="collapse">
+  <li><a href="#stac" id="toc-stac" class="nav-link" data-scroll-target="#stac">STAC</a></li>
+  </ul></li>
+  <li><a href="#more-info" id="toc-more-info" class="nav-link" data-scroll-target="#more-info">More info</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil, Arno Timmer </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 23, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="page-header-title"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a></span> <img src="https://geoscripting-wur.github.io/figs/WUR_RGB_standard_2025.svg" alt="WUR logo" class="page-header-logo"></p>
+<section id="raster-data-handling-with-python" class="level1">
+<h1>Raster data handling with Python</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:</p>
+<ul>
+<li><a href="https://geopython.github.io/OWSLib/">OWSLib</a> allows us to download geospatial raster data from Web Coverage Services</li>
+<li><a href="https://gdal.org/api/python_bindings.html">GDAL</a> is a powerful library for reading, writing and warping raster datasets</li>
+<li><a href="https://Rasterio.readthedocs.io/en/latest/">Rasterio</a> reads and writes geospatial raster data</li>
+<li><a href="https://pythonhosted.org/rasterstats/">rasterstats</a> summarizes geospatial raster datasets based on vector geometries</li>
+<li><a href="http://www.numpy.org/">NumPy</a> is a fundamental package for scientific computing, such as array (thus raster) calculations</li>
+</ul>
+</section>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<ul>
+<li>Be able to read spatial raster data from web services and files</li>
+<li>Be able to write spatial raster formats to disk</li>
+<li>Know how to apply basic operations on raster data, such as arithmetics</li>
+<li>Be able to plot spatial raster data with Matplotlib</li>
+</ul>
+</section>
+<section id="setting-up-the-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-python-environment">Setting up the Python Environment</h2>
+<p>Like in the previous tutorials, we will create a pixi environment. Do this by creating a directory for this tutorial, copying the following text in a <code>pixi.toml</code> file and run <code>pixi install</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">authors</span> <span class="op">=</span> <span class="op">[</span><span class="st">"Your Name &lt;your.email@example.com&gt;"</span><span class="op">]</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">channels</span> <span class="op">=</span> <span class="op">[</span><span class="st">"conda-forge"</span><span class="op">]</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"raster"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">platforms</span> <span class="op">=</span> <span class="op">[</span><span class="st">"linux-64"</span><span class="op">]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="st">"0.1.0"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[tasks]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[dependencies]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">python</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">numpy</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">matplotlib</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="dt">owslib</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">gdal</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">geopandas</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="dt">rasterio</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="dt">rasterstats</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">affine</span> <span class="op">=</span> <span class="st">"*"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">ipykernel</span> <span class="op">=</span> <span class="st">"*"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Create the necessary directories for this tutorial (for this we use the nifty <a href="https://docs.python.org/3/library/pathlib.html">Pathlib package</a>, the standard path handling library in python! ):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> Path.home() <span class="co"># This references the location of your script</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(base <span class="op">/</span> <span class="st">"data"</span>).mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>From now on, if you see the format combining strings and variables together with <code>/</code>’s like: <code>base / 'some_dir_name'</code>, it is Pathlib based path handling.</p>
+<p>Use this directory for the rest of this tutorial.</p>
+</section>
+</section>
+<section id="reading-raster-data-and-accessing-metadata" class="level1">
+<h1>Reading raster data and accessing metadata</h1>
+<p>There are many ways to work with raster data, you have been introduced to some in R and bash. In Python we can do similar things, often using the same underlying software (gdal for example).</p>
+<p>Before we will look into how to deal with local files and data processing, we will introduce web services and will show you how to access and store remote (online hosted) data locally. This is useful, because we can rely on the owner of the data (governments for example) updating the data, making our analysis pipelines make use of up to date data. Think about a yearly update of some dataset, where the source data is renewed ‘automagically’ each year.</p>
+<p>Conveniently, the data that we will access and store locally, will be used throughout this tutorial to introduce libraries that can be used for reading, writing and processing raster data in Python.</p>
+<p>Lastly, we will look a more recent development in the area of analyzing (sometimes very large and multidimensional) remotely stored raster datasets.</p>
+<section id="from-a-web-coverage-service" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-web-coverage-service">From a Web Coverage Service</h2>
+<p>A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. <a href="https://www.ogc.org/standards/wcs">Web Coverage Services</a> are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A <a href="https://www.ogc.org/standards/wms">Web Map Service</a> [WMS] is another dataservice for raster data. An important difference between them is that a WCS serves the raw raster data (such as elevation in meters for Digital Elevation Models), and a WMS serves visualizations of data, for example a nice elevation basemap with 3 bands for Red Green and Blue (RGB) instead of the raw data.</p>
+<p>Today we will work with elevation rasters. More specifically, we will have a look at the WCS of the AHN dataset. AHN stands for “Actueel Hoogtebestand Nederland” and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents. For this we will use OWSLib:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> owslib.wcs <span class="im">import</span> WebCoverageService</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the WCS by proving the url and optional arguments</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wcs <span class="op">=</span> WebCoverageService(<span class="st">'https://service.pdok.nl/rws/ahn/wcs/v1_0?SERVICE=WCS&amp;request=GetCapabilities'</span>, version<span class="op">=</span><span class="st">'1.0.0'</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Print to check the contents of the WCS</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(wcs.contents))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>['dsm_05m', 'dtm_05m']</code></pre>
+</div>
+</div>
+<p>Running the last line of code shows that the Web Coverage Service of the AHN3 contains two rasters with the identifiers <code>dtm_05m</code> and <code>dsm_05m</code>, corresponding to a 0.5m resolution DSM, and 0.5m resolution DTM. Raster data of AHN has the projected coordinate system <code>RD_New (EPSG: 28992)</code>. The difference between a DEM, DSM and DTM is explained in this question on <a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704">GIS StackExchange</a> (Thanks <a href="https://gis.stackexchange.com/users/187/underdark"><span class="citation" data-cites="underdark">@underdark</span></a>!).</p>
+<p>We can also check what types of operations are available for this WCS:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get all operations and print the name of each of them</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>([op.name <span class="cf">for</span> op <span class="kw">in</span> wcs.operations])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>['GetCapabilities', 'DescribeCoverage', 'GetCoverage']</code></pre>
+</div>
+</div>
+<p>You will see that the Web Coverage Service allows accessing the data (<code>GetCoverage</code>), the metadata (<code>DescribeCoverage</code>), and the capabilities (<code>GetCapabilities</code>). These are all standard protocols defined by the OGC.</p>
+<p>Several functions are available to access specific metadata of each individual raster, for example:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Take the 0.5m DSM as an example</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cvg <span class="op">=</span> wcs.contents[<span class="st">'dsm_05m'</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print supported reference systems, the bounding box defined in WGS 84 coordinates, and supported file formats</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Available CRS options: </span><span class="sc">{</span>cvg<span class="sc">.</span>supportedCRS<span class="sc">}</span><span class="ss">'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Available CRS options: [urn:ogc:def:crs:EPSG::28992, urn:ogc:def:crs:EPSG::28992]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Bounding box is WGS84: </span><span class="sc">{</span>cvg<span class="sc">.</span>boundingBoxWGS84<span class="sc">}</span><span class="ss">'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Bounding box is WGS84: (3.20030320333955, 50.728765211722, 7.273444085294, 53.555958411015)</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Supported formats: </span><span class="sc">{</span>cvg<span class="sc">.</span>supportedFormats<span class="sc">}</span><span class="ss">'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Supported formats: ['GEOTIFF']</code></pre>
+</div>
+</div>
+<p>Let us have a look at the data itself. Calling the GetCoverage function will send a request to the server where the data is stored and download the data. As we do not want to overload the web service, we call this function once, download the data and store it locally.</p>
+<p>Download the Digital Surface Model [DSM], which we can access through the ‘dsm_05m’ identifier, and Digital Terrain Model [DTM], which is the ‘dtm_05m’ version, to a local file.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>x, y <span class="op">=</span> <span class="dv">174100</span>, <span class="dv">444100</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>bbox <span class="op">=</span> (x <span class="op">-</span> <span class="dv">500</span>, y <span class="op">-</span> <span class="dv">500</span>, x <span class="op">+</span> <span class="dv">500</span>, y <span class="op">+</span> <span class="dv">500</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Request the DSM data from the WCS</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">'dsm_05m'</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">'GEOTIFF'</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                           crs<span class="op">=</span><span class="st">'urn:ogc:def:crs:EPSG::28992'</span>, resx<span class="op">=</span><span class="fl">0.5</span>, resy<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Write the data to a local file in the 'data' directory</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_DSM.tif"</span>, <span class="st">'wb'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    _ <span class="op">=</span> <span class="bu">file</span>.write(response.read()) <span class="co"># file.write returns the number of bytes written</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Do the same for the DTM</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> wcs.getCoverage(identifier<span class="op">=</span><span class="st">'dtm_05m'</span>, bbox<span class="op">=</span>bbox, <span class="bu">format</span><span class="op">=</span><span class="st">'GEOTIFF'</span>,</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>                           crs<span class="op">=</span><span class="st">'urn:ogc:def:crs:EPSG::28992'</span>, resx<span class="op">=</span><span class="fl">0.5</span>, resy<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_DTM.tif"</span>, <span class="st">'wb'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    _ <span class="op">=</span> <span class="bu">file</span>.write(response.read())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>That’s a very short introduction to webservices and accessing with Python. The datasets that you now stored locally we will use in the rest of the tutorial. Before continuing, please check if these steps were successful (<em>Check if files have been written into corresponding directory</em>).</p>
+</section>
+<section id="from-a-file-with-gdal" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-file-with-gdal">From a file with GDAL</h2>
+<p><a href="https://gdal.org/">GDAL</a> is the fundament under most spatial operations, reading and writing data and a lot more. GDAL is a C++ library that can handle raster and vector geospatial data formats. There are APIs to access GDAL functionality in Python, but also in Java, R and C. When opening a raster file in GDAL, the object has a hierarchical structure starting at the Dataset level. A Dataset has a Geotransform (metadata) and can contain one or more Bands. Each Band has a Data array and potentially Overviews.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="./images/gdal.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python."><img src="./images/gdal.png" class="img-fluid figure-img" style="width:90.0%" alt="gdal structure"></a></p>
+<figcaption>GDAL class structure, adapted from Garrard, 2016, Geoprocessing with Python.</figcaption>
+</figure>
+</div>
+<p>As you can see handling spatial data with GDAL can become a bit confusing. But since it is so fundamental it is good to get familiar with the very basics of GDAL. Luckily there are packages that build upon GDAL that make life a bit easier, but they all use GDAL under the hood. More on those packages later, first let’s have a look at opening geotiff in GDAL.</p>
+<p>Let us open the file we just saved. You will see you first get the dataset (even though there is only one), before the data array can be accessed.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> osgeo <span class="im">import</span> gdal</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Open dataset, gdal automatically selects the correct driver</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> gdal.Open(<span class="bu">str</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_DSM.tif"</span>))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the band (band number 1)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>band <span class="op">=</span> ds.GetRasterBand(<span class="dv">1</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the data array</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> band.ReadAsArray()</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete objects to close the file</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<strong>Question 1</strong>: What happening with <code>ds = None</code> at the end of your script? Is it important? What may happen if you do not do that?
+<details>
+<summary>
+<em>Click for answer</em>
+</summary>
+Setting <code>ds</code> to None, makes python forget the dataset, closing the dataset, it<code>s a C thing. Keeping files open may leave you vulnerable to losing data, (Geo)Pandas manages resources under the hood so you don't explicitly need to close files, but for the case of GDAL, and as you will later see, Rasterio, it's important to close your files. Another way to handle this is using contexts, for this we would open them with a context manager</code>with open …`. More on that later.
+</details>
+</div>
+</div>
+</div>
+</section>
+<section id="from-a-file-with-rasterio" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-file-with-rasterio">From a file with Rasterio</h2>
+<p>GDAL can be tricky to work with but it allows for a lot of flexibility. There are tools that build upon GDAL, making integration with other software more intuitive. One of them is Rasterio. As <a href="https://Rasterio.readthedocs.io/en/latest/intro.html">Rasterio explains on their website</a>, the goal of Rasterio is to the standard geospatial abstraction library that can use modern python features, and frees users from C related pitfalls. It allows to read and write the same raster formats as GDAL can, provides raster processing functions, and can be integrated with other packages using NumPy and GeoJSON, and allows for easy visualization based upon MatPlotLib.</p>
+<p>The rest of the tutorial below is a complete route of handling a raster dataset. We will use the DEMs from the WCS for our study area, handle it with Rasterio, calculate new information (CHM), overlay it with vector data representing buildings and visualize it. Let us read in the raster data we just stored from the WCS with Rasterio and plot it with <code>rasterio.plot</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rasterio</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rasterio.plot <span class="im">import</span> show</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Open the two rasters</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>dsm <span class="op">=</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_DSM.tif"</span>, driver<span class="op">=</span><span class="st">"GTiff"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>dtm <span class="op">=</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_DTM.tif"</span>, driver<span class="op">=</span><span class="st">"GTiff"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Metadata functions from Rasterio</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dsm.meta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{'driver': 'GTiff', 'dtype': 'float32', 'nodata': 3.4028234663852886e+38, 'width': 2000, 'height': 2000, 'count': 1, 'crs': CRS.from_wkt('PROJCS["Amersfoort / RD New",GEOGCS["Amersfoort",DATUM["Amersfoort",SPHEROID["Bessel 1841",6377397.155,299.1528128,AUTHORITY["EPSG","7004"]],AUTHORITY["EPSG","6289"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4289"]],PROJECTION["Oblique_Stereographic"],PARAMETER["latitude_of_origin",52.1561605555556],PARAMETER["central_meridian",5.38763888888889],PARAMETER["scale_factor",0.9999079],PARAMETER["false_easting",155000],PARAMETER["false_northing",463000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","28992"]]'), 'transform': Affine(0.5, 0.0, 173600.0,
+       0.0, -0.5, 444600.0)}</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dtm.meta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{'driver': 'GTiff', 'dtype': 'float32', 'nodata': 3.4028234663852886e+38, 'width': 2000, 'height': 2000, 'count': 1, 'crs': CRS.from_wkt('PROJCS["Amersfoort / RD New",GEOGCS["Amersfoort",DATUM["Amersfoort",SPHEROID["Bessel 1841",6377397.155,299.1528128,AUTHORITY["EPSG","7004"]],AUTHORITY["EPSG","6289"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4289"]],PROJECTION["Oblique_Stereographic"],PARAMETER["latitude_of_origin",52.1561605555556],PARAMETER["central_meridian",5.38763888888889],PARAMETER["scale_factor",0.9999079],PARAMETER["false_easting",155000],PARAMETER["false_northing",463000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","28992"]]'), 'transform': Affine(0.5, 0.0, 173600.0,
+       0.0, -0.5, 444600.0)}</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot with rasterio.plot, which provides Matplotlib functionality</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">5</span>), dpi<span class="op">=</span><span class="dv">300</span>)  <span class="co"># adjust size and resolution</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;Figure size 1500x1500 with 0 Axes&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>show(dsm, title<span class="op">=</span><span class="st">'Digital Surface Model'</span>, cmap<span class="op">=</span><span class="st">'gist_ncar'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/home/osboxes/.cache/R/reticulate/uv/cache/archive-v0/PgK8qDIqdnpnQ0BN/lib/python3.12/site-packages/matplotlib/colors.py:824: RuntimeWarning: overflow encountered in multiply
+  xa *= self.N
+&lt;Axes: title={'center': 'Digital Surface Model'}&gt;</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="480"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<strong>Question 2</strong>: Adjust the code above to take a look at the DTM. Note the gaps that appear. What are these gaps?
+<details>
+<summary>
+<em>Click for answer</em>
+</summary>
+These are buildings.
+</details>
+</div>
+</div>
+</div>
+<p>The metadata shows the driver, datatype, nodata value, width of raster in number of cells, height of raster in number of cells, number of raster bands in the dataset, coordinate reference system, and transformation values.</p>
+<p>Rasterio allows us to access the data values in a raster as NumPy arrays. We can use the <code>.read()</code> method to access these:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasterio object</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(dsm))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'rasterio.io.DatasetReader'&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read, show object type and data</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>dsm_data <span class="op">=</span> dsm.read(<span class="dv">1</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(dsm_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'numpy.ndarray'&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dsm_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[9.6194000e+00 9.6737003e+00 9.7122002e+00 ... 1.5386500e+01
+  1.5427000e+01 1.5508700e+01]
+ [9.7265997e+00 9.6819000e+00 9.6217003e+00 ... 1.5614400e+01
+  1.5687100e+01 1.5700100e+01]
+ [9.6140003e+00 9.5950003e+00 9.5971003e+00 ... 1.5810200e+01
+  1.5840300e+01 1.5918300e+01]
+ ...
+ [8.1936998e+00 8.1719999e+00 8.1789999e+00 ... 3.4028235e+38
+  3.4028235e+38 3.4028235e+38]
+ [8.1758003e+00 8.1443005e+00 8.1541996e+00 ... 3.4028235e+38
+  3.4028235e+38 3.4028235e+38]
+ [8.1570997e+00 8.1427002e+00 8.1483002e+00 ... 3.4028235e+38
+  3.4028235e+38 3.4028235e+38]]</code></pre>
+</div>
+</div>
+<p><a href="https://numpy.org/doc/stable/user/whatisnumpy.html">NumPy</a> is a very common Python Library providing support for large, multi-dimensional arrays and fast mathematical operations. Because it is so common, other libraries will be able to read NumPy arrays. This makes it possible to read raster data into other libraries, such as the machine learning in scikit-learn.</p>
+</section>
+</section>
+<section id="processing-raster-data" class="level1">
+<h1>Processing raster data</h1>
+<p>Now that we have some options to read data into python, let’s have a look at what we can do with it.</p>
+<section id="creating-a-canopy-height-model" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-canopy-height-model">Creating a Canopy Height Model</h2>
+<p>A Canopy Height Model (CHM) gives an indication of the height of trees and/or buildings. It can be created by subtracting a Digital Terrain Model from a Digital Surface Model. In the resulting raster, each cell value represents the height above the underlying surface topography.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the data from the two rasters</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>dsm_data <span class="op">=</span> dsm.read()</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>dtm_data <span class="op">=</span> dtm.read()</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set our nodata to np.nan (this is important for later)</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>dsm_data[dsm_data <span class="op">==</span> dsm.nodata] <span class="op">=</span> np.nan</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>dtm_data[dtm_data <span class="op">==</span> dtm.nodata] <span class="op">=</span> np.nan</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Close open rasterio datasets so their files can be removed</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>dsm.close()</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>dtm.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Similar to a gdal dataset, we have to close rasterio datasets. If you don’t do this, you are firstly not able to delete the files but it can also lead to other strange behaviour.</p>
+<p>Earlier, we noticed that the DTM included gaps. Let’s first fill these gaps using the <code>fillnodata()</code> function from <code>rasterio.fill</code>. For more information, see the <a href="https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html">documentation</a>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rasterio.fill <span class="im">import</span> fillnodata</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a mask to specify which pixels to fill (0=fill, 1=do not fill)</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>dtm_mask <span class="op">=</span> dtm_data.copy()</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>dtm_mask[<span class="op">~</span>np.isnan(dtm_data)] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>dtm_mask[np.isnan(dtm_data)] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Fill missing values</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>dtm_data <span class="op">=</span> fillnodata(dtm_data, mask<span class="op">=</span>dtm_mask)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now, we can create a CHM (<a href="https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704?">remember</a>):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Subtract the NumPy arrays </span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>chm <span class="op">=</span> dsm_data <span class="op">-</span> dtm_data</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the resulting array</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(chm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[[0.         0.0187006  0.00889969 ... 3.199545   3.244937   3.3275146 ]
+  [0.02470016 0.02740002 0.         ... 3.435215   3.5135546  3.5329914 ]
+  [0.         0.         0.         ... 3.6233873  3.6674585  3.7521896 ]
+  ...
+  [0.         0.         0.         ...        nan        nan        nan]
+  [0.         0.         0.         ...        nan        nan        nan]
+  [0.         0.         0.         ...        nan        nan        nan]]]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy metadata of one of the rasters (does not matter which one)</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>kwargs <span class="op">=</span> dsm.meta </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the chm as a raster</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_CHM.tif"</span>, <span class="st">'w'</span>, <span class="op">**</span>kwargs) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">file</span>.write(chm.astype(rasterio.float32))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The actual raster arithmetic is happening in the first line: <code>chm = dsm_data - dtm_data</code>. dsm_data and dtm_data are plain numpy arrays, without spatial information. If we want to write this data back to a <code>.tif</code>, we need to do include this spatial information. All this information is stored in the metadata of a rasterio object. Since we subtracted two rasters with the same spatial dimensions (the same number of rows, columns and the same CRS for example), we can re-use this metadata to write a raster with the new data. Run the following code block to see what exactly is in this metadata:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We use pprint instead of print to pretty print a dictionary </span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pprint</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>pprint.pp(dsm.meta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{'driver': 'GTiff',
+ 'dtype': 'float32',
+ 'nodata': 3.4028234663852886e+38,
+ 'width': 2000,
+ 'height': 2000,
+ 'count': 1,
+ 'crs': CRS.from_wkt('PROJCS["Amersfoort / RD New",GEOGCS["Amersfoort",DATUM["Amersfoort",SPHEROID["Bessel 1841",6377397.155,299.1528128,AUTHORITY["EPSG","7004"]],AUTHORITY["EPSG","6289"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4289"]],PROJECTION["Oblique_Stereographic"],PARAMETER["latitude_of_origin",52.1561605555556],PARAMETER["central_meridian",5.38763888888889],PARAMETER["scale_factor",0.9999079],PARAMETER["false_easting",155000],PARAMETER["false_northing",463000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","28992"]]'),
+ 'transform': Affine(0.5, 0.0, 173600.0,
+       0.0, -0.5, 444600.0)}</code></pre>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<strong>Question 3</strong>: Where is the CHM the highest in the study area? Is it what you expected?
+<details>
+<summary>
+<em>Click for answer</em>
+</summary>
+Think about where you have the most forests on campus.
+</details>
+</div>
+</div>
+</div>
+<p>We have now applied the basic raster arithmetic and created a Canopy Height Model!</p>
+</section>
+<section id="computing-heights-of-buildings" class="level2">
+<h2 class="anchored" data-anchor-id="computing-heights-of-buildings">Computing heights of buildings</h2>
+<p>Using our CHM, let’s determine the average heights of the buildings in our study area. The first step is knowing where the buildings are. For this we use the building data from the BAG Web Feature Service that we also used in the vector tutorial. Note that we make use of the <code>bbox</code> from an earlier codeblock for this.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> owslib.wfs <span class="im">import</span> WebFeatureService</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the WFS of the BAG</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>wfsUrl <span class="op">=</span> <span class="st">'https://service.pdok.nl/lv/bag/wfs/v2_0'</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>wfs <span class="op">=</span> WebFeatureService(url<span class="op">=</span>wfsUrl, version<span class="op">=</span><span class="st">'2.0.0'</span>)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>layer <span class="op">=</span> <span class="bu">list</span>(wfs.contents)[<span class="dv">0</span>]</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the features for the study area</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co"># notice that we now get them as json, in contrast to before</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> wfs.getfeature(typename<span class="op">=</span>layer, bbox<span class="op">=</span>bbox, outputFormat<span class="op">=</span><span class="st">'json'</span>)</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> json.loads(response.read())</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create GeoDataFrame, without saving first</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>buildings_gdf <span class="op">=</span> gpd.GeoDataFrame.from_features(data[<span class="st">'features'</span>])</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Set crs to RD New</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>buildings_gdf.crs <span class="op">=</span> <span class="dv">28992</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Getting the average per building polygon can be done using a common operation called zonal statistics. There are several implementations of this in python, we will use the <a href="https://pythonhosted.org/rasterstats/">Rasterstats</a> library. <a href="https://pythonhosted.org/rasterstats/"><code>Rasterstats.zonal_stats</code></a> has 3 inputs, vector data, rasterdata and the type of statistic that needs to be calculated. See the vector and raster datasources pages in the documentation to see what inputs are supported for those. We will use a <code>GeoDataFrame</code> and a <code>.tif</code> file for this task. Using the <code>geojson_out</code> parameter we make it output a <a href="http://geojson.org/">GeoJSON</a>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rasterstats <span class="im">as</span> rs</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the zonal statistics function with gdf and tif as input</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>chm_buildings <span class="op">=</span> rs.zonal_stats(buildings_gdf, base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_CHM.tif"</span>, prefix<span class="op">=</span><span class="st">'CHM_'</span>, geojson_out<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert GeoJSON to GeoDataFrame</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>buildings_gdf <span class="op">=</span> gpd.GeoDataFrame.from_features(chm_buildings)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the added attributes with a prefix 'CHM_'</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(buildings_gdf[<span class="st">'CHM_mean'</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0       6.146636
+1      11.102596
+2       7.686321
+3      13.348260
+4       8.365085
+         ...    
+189     0.921717
+190     4.211526
+191     4.733384
+192     2.511573
+193     3.897702
+Name: CHM_mean, Length: 194, dtype: float64</code></pre>
+</div>
+</div>
+<p>A quick visualization shows us the heights derived from the raster data on the map:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create one plot with figure size 10 by 10</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Customize figure with title, legend, and facecolour</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Heights above ground (m) of buildings on the WUR campus'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Text(0.5, 1.0, 'Heights above ground (m) of buildings on the WUR campus')</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>buildings_gdf.plot(ax<span class="op">=</span>ax, column<span class="op">=</span><span class="st">'CHM_mean'</span>, k<span class="op">=</span><span class="dv">6</span>,</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                   cmap<span class="op">=</span>plt.cm.viridis, linewidth<span class="op">=</span><span class="dv">1</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>, legend<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;Axes: title={'center': 'Heights above ground (m) of buildings on the WUR campus'}&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>ax.set_facecolor(<span class="st">"lightgray"</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize figure</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-16-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-16-3.png" class="img-fluid figure-img" width="960"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="other-functionality" class="level2">
+<h2 class="anchored" data-anchor-id="other-functionality">Other functionality</h2>
+<p>Note that this tutorial only scratches the surface of the possibilities of Rasterio. It can do most if not all things you did in <code>R</code> in the Vector - Raster tutorial. Rasterio for example also allows you to do <a href="https://rasterio.readthedocs.io/en/latest/topics/masking-by-shapefile.html">masking</a>, <a href="https://rasterio.readthedocs.io/en/latest/topics/reproject.html">reprojecting</a>, and <a href="https://rasterio.readthedocs.io/en/latest/topics/resampling.html">resampling</a>.</p>
+</section>
+</section>
+<section id="writing-raster-data-to-a-file" class="level1">
+<h1>Writing raster data to a file</h1>
+<p>As you’ve seen before, to store the NumPy array as a raster file, Rasterio needs the accompanying metadata. It is possible to use the metadata of an existing raster (which we did before), but it is also possible to create it from scratch.</p>
+<p>To create metadata from scratch, the CRS can be defined with a function from Rasterio and the transformation can be defined using Affine. Affine is a Python module that facilitates <a href="https://www.quora.com/In-an-intuitive-explanation-what-is-an-affine-transformation-of-image">affine transformations</a>, i.e.&nbsp;scaling, rotating, mirroring or skewing of images/rasters/arrays.</p>
+<p>Rasterio can write most <a href="https://www.gdal.org/formats_list.html">raster formats from GDAL</a>. <a href="https://github.com/mapbox/rasterio/issues/731">The developers recommend using GeoTiff driver</a> for writing as it is the best-tested and best-supported format.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> affine</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the components of the crs (we know them from the DSM)</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>kwargs <span class="op">=</span> {<span class="st">'driver'</span>: <span class="st">'GTiff'</span>,</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>          <span class="st">'dtype'</span>: <span class="st">'float32'</span>,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>          <span class="st">'nodata'</span>: np.nan,</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>          <span class="st">'width'</span>: <span class="dv">2000</span>,</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">'height'</span>: <span class="dv">2000</span>,</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">'count'</span>: <span class="dv">1</span>,</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>          <span class="st">'crs'</span>: rasterio.crs.CRS.from_epsg(<span class="dv">28992</span>),</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>          <span class="st">'transform'</span>: affine.Affine(<span class="fl">0.5</span>, <span class="fl">0.0</span>, <span class="fl">173600.0</span>, <span class="fl">0.0</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">444600.0</span>)}</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Write the raster file</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_CHM_affine.tif"</span>, <span class="st">'w'</span>, <span class="op">**</span>kwargs) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">file</span>.write(chm.astype(rasterio.float32))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="more-on-raster-data-visualization" class="level1">
+<h1>More on raster data visualization</h1>
+<p>Raster data can be visualized by passing NumPy arrays to Matplotlib directly or by making use of a method in Rasterio that accesses Matplotlib for you. Using Matplotlib directly allows more flexibility, such as tweaking the legend, axis and labels, and is more suitable for professional purposes. The visualization using Rasterio requires less code and can give a quick idea of your raster data. We show both approaches below. Let’s first make a visualization of the DSM using Matplotlib:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create one plot with figure size 10 by 10</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>), dpi<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># rasterio's imshow() is the main raster plotting method in Matplotlib</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure an equal scale in the x and y direction</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>dsmplot <span class="op">=</span> ax.imshow(dsm_data[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">'Oranges'</span>, extent<span class="op">=</span>bbox, aspect<span class="op">=</span><span class="st">'equal'</span>)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Title (do not do this for a scientific report, use a caption instead)</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Digital Surface Model - WUR Campus"</span>, fontsize<span class="op">=</span><span class="dv">14</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Text(0.5, 1.0, 'Digital Surface Model - WUR Campus')</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a legend (colourbar) with label</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> fig.colorbar(dsmplot, fraction<span class="op">=</span><span class="fl">0.035</span>, pad<span class="op">=</span><span class="fl">0.01</span>)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>cbar.ax.get_yaxis().labelpad <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>cbar.ax.set_ylabel(<span class="st">'Height (m)'</span>, rotation<span class="op">=</span><span class="dv">90</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Text(0, 0.5, 'Height (m)')</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Hide the axes</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>ax.set_axis_off()</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-18-5.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-18-5.png" class="img-fluid figure-img" width="960"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>If you do not like the orange colourmap of Matplotlib, it is also possible to pick <a href="https://Matplotlib.org/examples/color/colormaps_reference.html">another colourmap</a>.</p>
+<p>The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (this can be done with Matplotlib directly as well).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure with 1 row with 3 columns (1,3), so 3 subplots. </span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="co"># They are unpacked directly, plt.subplot returns fig and a tuple of the 3 axes</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>fig, (axdsm, axdtm, axchm) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">7</span>), dpi<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Populate the three subplots with raster data</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>show(dsm_data, ax<span class="op">=</span>axdsm, title<span class="op">=</span><span class="st">'DSM'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;Axes: title={'center': 'DSM'}&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>show(dtm_data, ax<span class="op">=</span>axdtm, title<span class="op">=</span><span class="st">'Filled DTM'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;Axes: title={'center': 'Filled DTM'}&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>show(chm, ax<span class="op">=</span>axchm, title<span class="op">=</span><span class="st">'CHM'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;Axes: title={'center': 'CHM'}&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-19-7.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-19-7.png" class="img-fluid figure-img" width="1440"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Rasterio can also create simple histograms by calling functions of Matplotlib. Let’s see if the 3 different elevation models are different comparing their histograms. For a bit of efficiency, we will stack the three models and store them as a three band raster. We will open it again and look at its histogram.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rasterio.plot <span class="im">import</span> show_hist</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Stack the three arrays along a new axis to create a 3-band raster</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure all arrays have the same shape and are 2D</span></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>three_band_array <span class="op">=</span> np.stack([dsm_data, dtm_data, chm], axis<span class="op">=</span><span class="dv">0</span>).squeeze()</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy metadata and update for 3 bands</span></span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>three_band_meta <span class="op">=</span> dsm.meta.copy()</span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>three_band_meta.update(count<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Write the 3-band raster to file</span></span>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_3band.tif"</span>, <span class="st">'w'</span>, <span class="op">**</span>three_band_meta) <span class="im">as</span> dst:</span>
+<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a>  dst.write(three_band_array.astype(rasterio.float32))</span>
+<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-16"><a href="#cb57-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Open it again and plot the histogram</span></span>
+<span id="cb57-17"><a href="#cb57-17" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> rasterio.<span class="bu">open</span>(base <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"AHN3_05m_3band.tif"</span>) <span class="im">as</span> raster:</span>
+<span id="cb57-18"><a href="#cb57-18" aria-hidden="true" tabindex="-1"></a>  show_hist(raster, bins<span class="op">=</span><span class="dv">50</span>, lw<span class="op">=</span><span class="fl">0.0</span>, stacked<span class="op">=</span><span class="va">False</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, </span>
+<span id="cb57-19"><a href="#cb57-19" aria-hidden="true" tabindex="-1"></a>            histtype<span class="op">=</span><span class="st">'stepfilled'</span>, title<span class="op">=</span><span class="st">"Histogram"</span>, label <span class="op">=</span> [<span class="st">'dsm'</span>, <span class="st">'dtm'</span>, <span class="st">'chm'</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-20-9.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-20-9.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<strong>Question 4</strong>: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+<details>
+<summary>
+<em>Click for answer</em>
+</summary>
+The y axis represents the count of pixels. Meanwhile the x axis represents the pixel’s DN (digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
+</details>
+</div>
+</div>
+</div>
+<section id="stac" class="level2">
+<h2 class="anchored" data-anchor-id="stac">STAC</h2>
+<p>In the examples above, we have looked at single images or relatively small areas. In the past years the amount of data that we are capturing has been growing. Web services are not suitable for sharing very large quantities of multimodal or multidimensional data. Searching and accessing these volumes of data can be done using the Spatial Temporal Asset Catalogue (STAC).</p>
+<p>This is a short (and incomplete) description of what STAC is and how to use it. For a more elaborate tutorial visit the dedicated <a href="https://geoscripting-wur.github.io/STAC/">STAC tutorial</a>.</p>
+<p>STAC is a standard with a strong community working on enabling easier access to data about our planet. It provides a standardized structure for accessing spatiotemporal datasets. The starting point is usually a STAC catalog, for example <a href="https://stac.ecodatacube.eu/?.language=en">https://stac.ecodatacube.eu/</a>. This website is a visual representation of a <code>catalog.json</code> file, that can be accessed by clicking on the source button in the top right. It is possible to search the catalog programmatically, and is discussed in the <a href="https://geoscripting-wur.github.io/STAC/">STAC Tutorial</a>. An alternative is to browse through the viewer and find relevant datasets there.</p>
+<p>A <em>STAC catalog</em> consists of a links to <em>collections</em>, <em>items</em> or other catalogs. A STAC collection is a collection of STAC items with similar traits. For example <a href="https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json"><code>https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json</code></a> (that can be found through the ecodatacube catalog). This collection, is a collection of STAC items regarding the soil organic carbon density (SOCD). In this case it links to datasets at different depths, at different timeframes.</p>
+<p>Generally these separate datasets can be found by a url stored in the items. These urls point, in the case of raster data, to a Cloud Optimized GeoTiff (COG). This is a Tiff file as we know it, it also ends at <code>.tiff</code>, but it contains some indexing and other metadata that makes the file searchable remotely instead of having to download the entire file before being able to for example mask a part of it.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rasterio</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rasterio.mask <span class="im">import</span> mask</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> shapely <span class="im">import</span> box</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Redefine the bounding box in the available crs (see before), now in EPSG:3035 to match the raster</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>x, y <span class="op">=</span> <span class="dv">4024900</span>, <span class="fl">3215843.5</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>bbox <span class="op">=</span> box(x <span class="op">-</span> <span class="dv">3579</span>, y <span class="op">-</span> <span class="fl">2134.5</span>, x <span class="op">+</span> <span class="dv">3579</span>, y <span class="op">+</span> <span class="fl">2134.5</span>) <span class="co"># In EPSG:3035 - same as raster</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a><span class="co"># get url from item asset link</span></span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>asset_url <span class="op">=</span> <span class="st">'https://s3.ecodatacube.eu/arco/ndvi_glad.landsat.ard2.seasconv.m.yearly_p25_30m_s_20220101_20221231_eu_epsg.3035_v20231127.tif'</span></span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a><span class="co"># open raster directly from S3 (requires rasterio with HTTP enabled, which is default)</span></span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> rasterio.<span class="bu">open</span>(asset_url) <span class="im">as</span> src:</span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># crop the raster with the polygon</span></span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>    out_image, out_transform <span class="op">=</span> mask(src, [bbox], crop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the cropped raster</span></span>
+<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a>plt.imshow(out_image[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"viridis"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;matplotlib.image.AxesImage object at 0x754536c3c5c0&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Cropped raster over Wageningen"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Text(0.5, 1.0, 'Cropped raster over Wageningen')</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>plt.colorbar(label<span class="op">=</span><span class="st">"Value"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;matplotlib.colorbar.Colorbar object at 0x754536a38230&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-21-11.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/unnamed-chunk-21-11.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="more-info" class="level1">
+<h1>More info</h1>
+<ul>
+<li><a href="https://geohackweek.github.io/raster/04-workingwithrasters/">Tutorial working with rasters in Python with Rasterio</a></li>
+<li><a href="https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html">Tutorial working with raster in Python with GDAL (for Python 2)</a></li>
+<li><a href="https://earthexplorer.usgs.gov/">Landsat satellite images</a></li>
+<li><a href="http://espa.cr.usgs.gov/index/">Resampled landsat satellite images</a></li>
+<li><a href="https://scihub.copernicus.eu/dhus/#/home">Sentinel satellite images</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
