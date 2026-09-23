@@ -1,0 +1,7 @@
+# _quarto.yml
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Python Raster"
