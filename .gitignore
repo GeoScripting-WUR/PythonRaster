@@ -4,8 +4,11 @@
 .Ruserdata
 .idea
 data/
-.vscode 
+.vscode
 
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+/.quarto/
+**/*.quarto_ipynb
