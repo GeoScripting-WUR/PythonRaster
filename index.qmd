@@ -40,24 +40,24 @@ reticulate::py_require("osmnx")
 Today we will work with Python packages for spatial raster analysis. Python has some dedicated packages to handle rasters:
 
 * [OWSLib](https://geopython.github.io/OWSLib/) allows us to download geospatial raster data from Web Coverage Services
-* [GDAL](https://gdal.org/api/python_bindings.html) is powerful library for reading, writing and warping raster datasets
+* [GDAL](https://gdal.org/api/python_bindings.html) is a powerful library for reading, writing and warping raster datasets
 * [Rasterio](https://Rasterio.readthedocs.io/en/latest/) reads and writes geospatial raster data
 * [rasterstats](https://pythonhosted.org/rasterstats/) summarizes geospatial raster datasets based on vector geometries
-* [NumPy](http://www.numpy.org/) is fundamental package for scientific computing, such as array (thus raster) calculations
+* [NumPy](http://www.numpy.org/) is a fundamental package for scientific computing, such as array (thus raster) calculations
 
 ## Learning objectives
 
 - Be able to read spatial raster data from web services and files
 - Be able to write spatial raster formats to disk
 - Know how to apply basic operations on raster data, such as arithmetics
-- Be able to plot spatial raster data with Matplotlib 
+- Be able to plot spatial raster data with Matplotlib
 
 ## Setting up the Python Environment
 Like in the previous tutorials, we will create a pixi environment. Do this by creating a directory for this tutorial, copying the following text in a `pixi.toml` file and run `pixi install`. 
 
 ```toml
 [workspace]
-authors = ["Arno Timmer <arno.timmer@wur.nl>"]
+authors = ["Your Name <your.email@example.com>"]
 channels = ["conda-forge"]
 name = "raster"
 platforms = ["linux-64"]
@@ -75,7 +75,6 @@ geopandas = "*"
 rasterio = "*"
 rasterstats = "*"
 affine = "*"
-osmnx = "*"
 ipykernel = "*"
 ```
 
@@ -84,7 +83,7 @@ Create the necessary directories for this tutorial (for this we use the nifty [P
 ```{python}
 from pathlib import Path
 
-base = Path(r'C:\workdir\courses-workdir\GRS33806\development\website\PythonRaster') # This references the location of your script
+base = Path.home() # This references the location of your script
 (base / "data").mkdir(exist_ok=True)
 ```
 
@@ -94,23 +93,17 @@ From now on, if you see the format combining strings and variables together with
 Use this directory for the rest of this tutorial. 
 
 # Reading raster data and accessing metadata
-There are many ways to work with raster data, you have been introduced to some in R and bash. in Python we can do similar things, often using the same underlying software (gdal for example). 
+There are many ways to work with raster data, you have been introduced to some in R and bash. In Python we can do similar things, often using the same underlying software (gdal for example).
 
-Before we will look into how to deal with local files and data processing, we will introduce web services and will show you how to access and store remote (online hosted) data locally. This is useful, because we can rely on the owner of the data (governments for example) updating the data, making our analysis pipelines making use of up to date data. Think about a yearly update of some dataset, where the source data is renewed 'automagically' each year. 
- 
-Conveniently, the data that we will acces and store locally, will be used throughout this tutorial to introduce libraries that can be used for reading, writing and processing raster data in Python.
+Before we will look into how to deal with local files and data processing, we will introduce web services and will show you how to access and store remote (online hosted) data locally. This is useful, because we can rely on the owner of the data (governments for example) updating the data, making our analysis pipelines make use of up to date data. Think about a yearly update of some dataset, where the source data is renewed 'automagically' each year.
+
+Conveniently, the data that we will access and store locally, will be used throughout this tutorial to introduce libraries that can be used for reading, writing and processing raster data in Python.
 
 Lastly, we will look a more recent development in the area of analyzing (sometimes very large and multidimensional) remotely stored raster datasets. 
 
-::: {.callout-warning}
-TODO: revise this argument
-Check if intro still covers material in qmd.
-:::
-
-
 ## From a Web Coverage Service
 
-A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. [Web Coverage Services](https://www.ogc.org/standards/wcs) are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A [Web Map Service](https://www.ogc.org/standards/wms) [WMS] is another dataservice for raster data. An important difference between them is that a WCS serves the raw raster data (such as elevation in meters for Digital Elevation Models), and a WMS serves visualizations of data, for example a nice elevation basemap with 3 bands for Red Green and Blue (RGB) instad of the raw data.
+A Web Coverage Service (WCS) loads raster data in a similar way as Web Feature Services (WFS) load vector data. [Web Coverage Services](https://www.ogc.org/standards/wcs) are a standard by the Open Geospatial Consortium and allow the downloading of geospatial raster data with multiple types of format encoding: GeoTIFF, netCDF, JPEG2000 etc. A [Web Map Service](https://www.ogc.org/standards/wms) [WMS] is another dataservice for raster data. An important difference between them is that a WCS serves the raw raster data (such as elevation in meters for Digital Elevation Models), and a WMS serves visualizations of data, for example a nice elevation basemap with 3 bands for Red Green and Blue (RGB) instead of the raw data.
 
 Today we will work with elevation rasters. More specifically, we will have a look at the WCS of the AHN dataset. AHN stands for "Actueel Hoogtebestand Nederland" and is a Digital Elevation Model [DEM] that covers the Netherlands. Access the web coverage service to have a look at the contents. For this we will use OWSLib:
 
@@ -124,7 +117,7 @@ wcs = WebCoverageService('https://service.pdok.nl/rws/ahn/wcs/v1_0?SERVICE=WCS&r
 print(list(wcs.contents))
 ```
 
-Running the last line of code shows that the Web Coverage Service of the AHN3 contains two rasters with the identifiers `dtm_05m` and `dsm_05m`, corresponding to a  0.5m resolution DSM, and 0.5m resolution DTM. Raster data of AHN has the projected coordinate system `RD_New (EPSG: 28992)`. The difference between a DEM, DSM and DTM is explained in thie question on [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704) (Thanks [@underdark](https://gis.stackexchange.com/users/187/underdark)!.
+Running the last line of code shows that the Web Coverage Service of the AHN3 contains two rasters with the identifiers `dtm_05m` and `dsm_05m`, corresponding to a  0.5m resolution DSM, and 0.5m resolution DTM. Raster data of AHN has the projected coordinate system `RD_New (EPSG: 28992)`. The difference between a DEM, DSM and DTM is explained in this question on [GIS StackExchange](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704) (Thanks [@underdark](https://gis.stackexchange.com/users/187/underdark)!).
 
 We can also check what types of operations are available for this WCS:
 
@@ -147,9 +140,9 @@ print(f'Bounding box is WGS84: {cvg.boundingBoxWGS84}')
 print(f'Supported formats: {cvg.supportedFormats}')
 ```
 
-Let us have a look at the data itself. Calling the GetCoverage function will send a request fo the server where the data is stored and download the data. As we do not want to overload the web service, we call this function once, download the data and store it locally. 
+Let us have a look at the data itself. Calling the GetCoverage function will send a request to the server where the data is stored and download the data. As we do not want to overload the web service, we call this function once, download the data and store it locally. 
 
-Download the Digital Surface Model [DSM], which we can acces through the 'dsm_05m' identifier, and Digital Terrain Model [DTM], which is the 'dtm_05m' version, to a local file.
+Download the Digital Surface Model [DSM], which we can access through the 'dsm_05m' identifier, and Digital Terrain Model [DTM], which is the 'dtm_05m' version, to a local file.
 
 ```{python}
 # Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it
@@ -162,14 +155,14 @@ response = wcs.getCoverage(identifier='dsm_05m', bbox=bbox, format='GEOTIFF',
 
 # Write the data to a local file in the 'data' directory
 with open(base / "data" / "AHN3_05m_DSM.tif", 'wb') as file:
-    file.write(response.read())
+    _ = file.write(response.read()) # file.write returns the number of bytes written
 
 # Do the same for the DTM
 response = wcs.getCoverage(identifier='dtm_05m', bbox=bbox, format='GEOTIFF',
                            crs='urn:ogc:def:crs:EPSG::28992', resx=0.5, resy=0.5)
 
 with open(base / "data" / "AHN3_05m_DTM.tif", 'wb') as file:
-    file.write(response.read())
+    _ = file.write(response.read())
 ```
 
 That's a very short introduction to webservices and accessing with Python. The datasets that you now stored locally we will use in the rest of the tutorial. Before continuing, please check if these steps were successful (*Check if files have been written into corresponding directory*).
@@ -211,12 +204,12 @@ ds = None
 
 ## From a file with Rasterio
 GDAL can be tricky to work with but it allows for a lot of flexibility. There are tools that build upon GDAL, 
-making integration with other software more intuitive. One of them is Raterio. As [Rasterio explains on their website](https://Rasterio.readthedocs.io/en/latest/intro.html), 
-the goal of Rasterio is to the standard geospatial abstraction library that can use modern ppython features, and frees users from C related pitfalls. 
+making integration with other software more intuitive. One of them is Rasterio. As [Rasterio explains on their website](https://Rasterio.readthedocs.io/en/latest/intro.html),
+the goal of Rasterio is to the standard geospatial abstraction library that can use modern python features, and frees users from C related pitfalls.
 It allows to read and write the same raster formats as GDAL can, provides raster processing functions, 
 and can be integrated with other packages using NumPy and GeoJSON, and allows for easy visualization based upon MatPlotLib.
 
-The rest of the tutorial below is a complete route of handling a raster dataset. We will use the DEMs from a the WCS for our study area, handle it with Rasterio, 
+The rest of the tutorial below is a complete route of handling a raster dataset. We will use the DEMs from the WCS for our study area, handle it with Rasterio,
 calculate new information (CHM), overlay it with vector data representing buildings and visualize it. 
 Let us read in the raster data we just stored from the WCS with Rasterio and plot it with `rasterio.plot`:
 
@@ -250,7 +243,7 @@ The metadata shows the driver, datatype, nodata value, width of raster in number
 
 Rasterio allows us to access the data values in a raster as NumPy arrays. We can use the `.read()` method to access these:
 
-```{python, eval=FALSE}
+```{python}
 # Rasterio object
 print(type(dsm))
 
@@ -302,7 +295,7 @@ dtm_mask[np.isnan(dtm_data)] = 0
 dtm_data = fillnodata(dtm_data, mask=dtm_mask)
 ```
 
-Now, we can create a CHM ([remember](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704?): 
+Now, we can create a CHM ([remember](https://gis.stackexchange.com/questions/5701/what-is-the-difference-between-dem-dsm-and-dtm/5704?)): 
 
 ```{python}
 # Subtract the NumPy arrays 
@@ -320,7 +313,7 @@ with rasterio.open(base / "data" / "AHN3_05m_CHM.tif", 'w', **kwargs) as file:
 
 ```
 
-The actual raster arythmics is happening in the first line: `chm = dsm_data - dtm_data`. dsm_data and dtm_data are plain numpy arrays, without spatial information. If we want to write this data back to a `.tif`, we need to do include this spatial information. All this inforamtion is stored in the metadata of a rasterio object. Since we subtracked two rasters with the same spatial dimensions (the same number of rows, columns and the same CRS for example), we can re-use this metadata to write a raster with the new data. Run the following code block to see what exactly is in this metadata: 
+The actual raster arithmetic is happening in the first line: `chm = dsm_data - dtm_data`. dsm_data and dtm_data are plain numpy arrays, without spatial information. If we want to write this data back to a `.tif`, we need to do include this spatial information. All this information is stored in the metadata of a rasterio object. Since we subtracted two rasters with the same spatial dimensions (the same number of rows, columns and the same CRS for example), we can re-use this metadata to write a raster with the new data. Run the following code block to see what exactly is in this metadata: 
 
 ```{python}
 # We use pprint instead of print to pretty print a dictionary 
@@ -336,7 +329,7 @@ pprint.pp(dsm.meta)
 </details>
 :::
 
-We have now applied the basic raster arythmics and created a Canopy Height Model!
+We have now applied the basic raster arithmetic and created a Canopy Height Model!
 
 ## Computing heights of buildings
 
@@ -364,7 +357,7 @@ buildings_gdf = gpd.GeoDataFrame.from_features(data['features'])
 buildings_gdf.crs = 28992
 ```
 
-Getting the average per building polygon can be done using a common operation called zonal statistics. There are several implementations of this in python, we will use the [Rasterstats](https://pythonhosted.org/rasterstats/) library. [`Rasterstats.zonal_stats`](https://pythonhosted.org/rasterstats/) has 3 inputs, vector data, rasterdata and the type of statistic that needs to be calculated. See the vector and raster datasources pages in the documentation to see what inputs are supported for thos. We will use a `GeoDataFrame` and a `.tif` file for this task. Using the `geojson_out` parameter we make it output a [GeoJSON](http://geojson.org/).
+Getting the average per building polygon can be done using a common operation called zonal statistics. There are several implementations of this in python, we will use the [Rasterstats](https://pythonhosted.org/rasterstats/) library. [`Rasterstats.zonal_stats`](https://pythonhosted.org/rasterstats/) has 3 inputs, vector data, rasterdata and the type of statistic that needs to be calculated. See the vector and raster datasources pages in the documentation to see what inputs are supported for those. We will use a `GeoDataFrame` and a `.tif` file for this task. Using the `geojson_out` parameter we make it output a [GeoJSON](http://geojson.org/).
 
 ```{python}
 import rasterstats as rs
@@ -416,7 +409,7 @@ kwargs = {'driver': 'GTiff',
           'width': 2000,
           'height': 2000,
           'count': 1,
-          'crs': rasterio.crs.CRS({'init': 'epsg:28992'}),
+          'crs': rasterio.crs.CRS.from_epsg(28992),
           'transform': affine.Affine(0.5, 0.0, 173600.0, 0.0, -0.5, 444600.0)}
 
 # Write the raster file
@@ -454,7 +447,7 @@ If you do not like the orange colourmap of Matplotlib, it is also possible to pi
 
 The second approach with Rasterio only requires one line of code to make a plot. By creating subplots, the figures can be combined (this can be done with Matplotlib directly as well).
 
-```{python, eval=FALSE}
+```{python}
 # Figure with 1 row with 3 columns (1,3), so 3 subplots. 
 # They are unpacked directly, plt.subplot returns fig and a tuple of the 3 axes
 fig, (axdsm, axdtm, axchm) = plt.subplots(1, 3, figsize=(15, 7), dpi=200)
@@ -468,7 +461,7 @@ plt.show()
 
 Rasterio can also create simple histograms by calling functions of Matplotlib. Let's see if the 3 different elevation models are different comparing their histograms. For a bit of efficiency, we will stack the three models and store them as a three band raster. We will open it again and look at its histogram. 
 
-```{python, eval=FALSE}
+```{python}
 from rasterio.plot import show_hist
 import numpy as np
 
@@ -493,7 +486,7 @@ with rasterio.open(base / "data" / "AHN3_05m_3band.tif") as raster:
 
 
 ::: {.callout-note appearance="simple"}
-**Question 5**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
+**Question 4**: What is represented on the x and y axis? The default axis labels are DN (x) and Frequency (y); if you were to change them, what labels would you pick to better reflect the content of the plots?
 <details>
   <summary>*Click for answer*</summary>
   The y axis represents the count of pixels. Meanwhile the x axis represents the pixel's DN (digital value), in this tutorial since we are looking at elevation this value is actually meters. For example, in the first plot (DSM) you can see that most pixel values are in the 10 to 15 meter range
@@ -502,11 +495,11 @@ with rasterio.open(base / "data" / "AHN3_05m_3band.tif") as raster:
 
 
 ## STAC 
-In the examples above, we have looked at single images or relatively small areas. In the past years the amount of data that we are capturing has been growing. Websvervices are not suitable for sharing very large quantities of multimodal or multidimensional data. Searching and accessing these volumes of data can be done using the Spatial Temporal Asset Catalogue (STAC). 
+In the examples above, we have looked at single images or relatively small areas. In the past years the amount of data that we are capturing has been growing. Web services are not suitable for sharing very large quantities of multimodal or multidimensional data. Searching and accessing these volumes of data can be done using the Spatial Temporal Asset Catalogue (STAC). 
 
 This is a short (and incomplete) description of what STAC is and how to use it. For a more elaborate tutorial visit the dedicated [STAC tutorial](https://geoscripting-wur.github.io/STAC/). 
 
-STAC is a standard with a strong community working on enabling easier acces to data about our planet. It provides a standardized structure for accessing spatiotemporal datasets. The starting point is usually a STAC catalog, for example [https://stac.ecodatacube.eu/](https://stac.ecodatacube.eu/?.language=en). This website is a visual representation of a `catalog.json` file, that can be accessed by clicking on the source button in the top right. It is possible to search the catalog programatically, and is discussed in the [STAC Tutorial](https://geoscripting-wur.github.io/STAC/). An alternative is to browse through the viewer and find relevant datasets there.
+STAC is a standard with a strong community working on enabling easier access to data about our planet. It provides a standardized structure for accessing spatiotemporal datasets. The starting point is usually a STAC catalog, for example [https://stac.ecodatacube.eu/](https://stac.ecodatacube.eu/?.language=en). This website is a visual representation of a `catalog.json` file, that can be accessed by clicking on the source button in the top right. It is possible to search the catalog programmatically, and is discussed in the [STAC Tutorial](https://geoscripting-wur.github.io/STAC/). An alternative is to browse through the viewer and find relevant datasets there.
 
 A *STAC catalog* consists of a links to *collections*, *items* or other catalogs. A STAC collection is a collection of STAC items with similar traits. For example [`https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json`](https://s3.ecodatacube.eu/arco/stac/oc_iso.10694.1995.mg.cm3/collection.json) (that can be found through the ecodatacube catalog). This collection, is a collection of STAC items regarding the soil organic carbon density (SOCD). In this case it links to  datasets at different depths, at different timeframes. 
 
@@ -518,8 +511,9 @@ from rasterio.mask import mask
 from shapely import box
 import matplotlib.pyplot as plt
 
-# Define a bounding box in the available crs (see before) by picking a point and drawing a 1x1 km box around it
-bbox = box( 4021321,3213709,  4028479, 3217978) # In EPSG:3035 - same as raster
+# Redefine the bounding box in the available crs (see before), now in EPSG:3035 to match the raster
+x, y = 4024900, 3215843.5
+bbox = box(x - 3579, y - 2134.5, x + 3579, y + 2134.5) # In EPSG:3035 - same as raster
 
 # get url from item asset link
 asset_url = 'https://s3.ecodatacube.eu/arco/ndvi_glad.landsat.ard2.seasconv.m.yearly_p25_30m_s_20220101_20221231_eu_epsg.3035_v20231127.tif'
