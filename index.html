@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jan Verbesselt, Jorge Mendes de Jesus, Aldo Bergsma, Dainius Masiliunas, David Swinkels, Judith Verstegen, Corné Vreugdenhil, Arno Timmer">
-<meta name="dcterms.date" content="2026-09-23">
+<meta name="dcterms.date" content="2026-09-28">
 
 <title>Raster data handling with Python – Python Raster</title>
 <style>
@@ -174,7 +174,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 23, 2026</p>
+      <p class="date">September 28, 2026</p>
     </div>
   </div>
   
@@ -236,7 +236,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> Path.home() <span class="co"># This references the location of your script</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> Path(<span class="st">'.'</span>) <span class="co"># This references the root of your current directory</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(base <span class="op">/</span> <span class="st">"data"</span>).mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>From now on, if you see the format combining strings and variables together with <code>/</code>’s like: <code>base / 'some_dir_name'</code>, it is Pathlib based path handling.</p>
@@ -393,7 +393,7 @@ Setting <code>ds</code> to None, makes python forget the dataset, closing the da
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>show(dsm, title<span class="op">=</span><span class="st">'Digital Surface Model'</span>, cmap<span class="op">=</span><span class="st">'gist_ncar'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>C:\Users\timme073\AppData\Local\R\cache\R\RETICU~1\uv\cache\ARCHIV~1\C3WQR0~1\Lib\site-packages\matplotlib\colors.py:824: RuntimeWarning: overflow encountered in multiply
+<pre><code>C:\Users\timme073\AppData\Local\R\cache\R\RETICU~1\uv\cache\ARCHIV~1\WI1EAJ~1\Lib\site-packages\matplotlib\colors.py:824: RuntimeWarning: overflow encountered in multiply
   xa *= self.N
 &lt;Axes: title={'center': 'Digital Surface Model'}&gt;</code></pre>
 </div>
@@ -591,11 +591,11 @@ Think about where you have the most forests on campus.
 3      13.348260
 4       8.365085
          ...    
-189     0.921717
-190     4.211526
-191     4.733384
-192     2.511573
-193     3.897702
+189     5.660699
+190     0.847196
+191    19.819857
+192     4.211526
+193     4.733384
 Name: CHM_mean, Length: 194, dtype: float64</code></pre>
 </div>
 </div>
@@ -791,7 +791,7 @@ The y axis represents the count of pixels. Meanwhile the x axis represents the p
 <span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the cropped raster</span></span>
 <span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a>plt.imshow(out_image[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"viridis"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;matplotlib.image.AxesImage object at 0x000001AD8827C410&gt;</code></pre>
+<pre><code>&lt;matplotlib.image.AxesImage object at 0x000002DFAB2904D0&gt;</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Cropped raster over Wageningen"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -799,7 +799,7 @@ The y axis represents the count of pixels. Meanwhile the x axis represents the p
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>plt.colorbar(label<span class="op">=</span><span class="st">"Value"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;matplotlib.colorbar.Colorbar object at 0x000001AD85F34A90&gt;</code></pre>
+<pre><code>&lt;matplotlib.colorbar.Colorbar object at 0x000002DFA8BA13D0&gt;</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
